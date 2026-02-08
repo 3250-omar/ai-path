@@ -31,12 +31,7 @@ export default function SignupPage() {
       formData.append("password", values.password);
 
       const result = await signUp(formData);
-
-      if (result?.error) {
-        message.error(result.error);
-      } else if (result?.message) {
-        message.success(result.message);
-      }
+      message.success(result.message);
     } catch {
       message.error("Failed to create account");
     } finally {

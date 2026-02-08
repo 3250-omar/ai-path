@@ -24,6 +24,14 @@ export default function GeneratingPage() {
   const router = useRouter();
 
   useEffect(() => {
+    const pathId = sessionStorage.getItem("pathId");
+
+    if (!pathId) {
+      // No path ID, redirect back to onboarding
+      router.push("/onboarding");
+      return;
+    }
+
     let stepIndex = 0;
     let progressValue = 0;
 
@@ -31,7 +39,13 @@ export default function GeneratingPage() {
       if (stepIndex >= generationSteps.length) {
         // All steps complete, redirect to dashboard
         setTimeout(() => {
-          router.push("/dashboard");
+          // Clear session storage
+          sessionStorage.removeItem("pathId");
+          sessionStorage.removeItem("pathTitle");
+          sessionStorage.removeItem("learningGoal");
+
+          // Redirect to the learning path view
+          router.push(`/learning-path/${pathId}`);
         }, 500);
         return;
       }
@@ -74,7 +88,7 @@ export default function GeneratingPage() {
       <div className="w-full max-w-lg bg-white rounded-2xl shadow-sm border border-border p-8 md:p-12 text-center">
         {/* Icon */}
         <div className="flex justify-center mb-6">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+          <div className="w-16 h-16 rounded-2xl bg-linear-to-br from-primary to-secondary flex items-center justify-center">
             <RocketOutlined className="text-3xl text-white" />
           </div>
         </div>
@@ -138,8 +152,8 @@ export default function GeneratingPage() {
             "0%": "#4f46e5",
             "100%": "#2563eb",
           }}
-          trailColor="#e5e7eb"
-          className="!mb-0"
+          railColor="#e5e7eb"
+          className="mb-0!"
         />
       </div>
     </div>

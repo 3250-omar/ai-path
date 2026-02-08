@@ -24,17 +24,46 @@ export default function OnboardingPage() {
   // Mock username - will come from auth later
   const userName = "omarMostafa";
 
-  const handleGenerate = () => {
+  const handleSubmit = async () => {
     if (!learningGoal.trim()) {
       message.warning("Please tell us what you want to learn!");
       return;
     }
-    setLoading(true);
-    // Store goal and navigate to generating page
-    sessionStorage.setItem("learningGoal", learningGoal);
-    router.push("/onboarding/generating");
-  };
 
+    setLoading(true);
+    try {
+      const res = await fetch("/api/generate-path", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ goal: learningGoal }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to generate learning path");
+      }
+
+      // Store path ID and title for the generating page
+      sessionStorage.setItem("pathId", data.pathId);
+      sessionStorage.setItem("pathTitle", data.title);
+      sessionStorage.setItem("learningGoal", learningGoal);
+
+      // Navigate to generating page
+      router.push("/onboarding/generating");
+    } catch (err) {
+      console.error("Generation error:", err);
+      message.error(
+        err instanceof Error
+          ? err.message
+          : "Failed to generate your learning path. Please try again.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
   const handleSuggestionClick = (suggestion: string) => {
     setLearningGoal(suggestion);
   };
@@ -50,7 +79,7 @@ export default function OnboardingPage() {
       <div className="w-full max-w-2xl bg-white rounded-2xl shadow-sm border border-border p-8 md:p-12">
         {/* Welcome Icon */}
         <div className="flex justify-center mb-6">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center">
+          <div className="w-14 h-14 rounded-2xl bg-linear-to-br from-primary/10 to-secondary/10 flex items-center justify-center">
             <BulbOutlined className="text-2xl text-primary" />
           </div>
         </div>
@@ -104,7 +133,7 @@ export default function OnboardingPage() {
           size="large"
           block
           loading={loading}
-          onClick={handleGenerate}
+          onClick={handleSubmit}
           className="!h-14 !rounded-xl !text-base !font-medium !bg-gradient-to-r !from-primary !to-secondary !border-0"
           icon={<span className="mr-1">✨</span>}
         >
