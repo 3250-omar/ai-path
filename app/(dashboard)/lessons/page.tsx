@@ -1,24 +1,201 @@
 "use client";
 
-import { Button, Card, Progress, Tag, Breadcrumb } from "antd";
+import { useEffect, useState, Suspense } from "react";
+import {
+  Button,
+  Card,
+  Progress,
+  Tag,
+  Breadcrumb,
+  Spin,
+  Empty,
+  message,
+} from "antd";
 import {
   ArrowLeftOutlined,
   ArrowRightOutlined,
   RobotOutlined,
   CheckCircleFilled,
   ClockCircleOutlined,
+  LinkOutlined,
+  TrophyOutlined,
 } from "@ant-design/icons";
+import { useSearchParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import type { LearningPath, Lesson, Module } from "@/types/learning-path";
 
-// Module progress items
-const moduleItems = [
-  { title: "Introduction to React Hooks", completed: true },
-  { title: "useState Hook", completed: true },
-  { title: "useEffect Hook", completed: false, active: true },
-  { title: "Custom Hooks", completed: false },
-  { title: "Advanced Patterns", completed: false },
-];
+function LessonsContent() {
+  const [learningPath, setLearningPath] = useState<LearningPath | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [markingComplete, setMarkingComplete] = useState(false);
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
-export default function LessonsPage() {
+  const lessonId = searchParams.get("lessonId");
+
+  useEffect(() => {
+    fetchActiveLearningPath();
+  }, []);
+
+  const fetchActiveLearningPath = async () => {
+    try {
+      const res = await fetch("/api/learning-path/active");
+      const data = await res.json();
+
+      if (data.success && data.path) {
+        setLearningPath(data.path);
+      }
+    } catch (err) {
+      console.error("Failed to fetch active learning path:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleMarkComplete = async (id: string) => {
+    setMarkingComplete(true);
+    try {
+      const res = await fetch(`/api/lessons/${id}/complete`, {
+        method: "POST",
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        message.success("Lesson marked as complete!");
+        // Refresh data
+        fetchActiveLearningPath();
+      } else {
+        message.error(data.error || "Failed to mark lesson as complete");
+      }
+    } catch (err) {
+      console.error("Error marking lesson complete:", err);
+      message.error("Failed to mark lesson as complete");
+    } finally {
+      setMarkingComplete(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <Spin size="large" />
+      </div>
+    );
+  }
+
+  if (!learningPath) {
+    return (
+      <div className="space-y-6">
+        <Card
+          className="rounded-xl! border-border!"
+          styles={{ body: { padding: 48 } }}
+        >
+          <Empty description="No active learning path found">
+            <Link href="/onboarding">
+              <Button
+                type="primary"
+                icon={<ArrowRightOutlined />}
+                className="rounded-lg! bg-primary!"
+              >
+                Create Learning Path
+              </Button>
+            </Link>
+          </Empty>
+        </Card>
+      </div>
+    );
+  }
+
+  // Find current lesson or default to first incomplete lesson
+  let currentLesson: Lesson | undefined;
+  let currentModule: Module | undefined;
+  let currentModuleIndex = -1;
+  let currentLessonIndex = -1;
+
+  if (lessonId) {
+    // Find specific lesson
+    for (let mIndex = 0; mIndex < learningPath.modules.length; mIndex++) {
+      const mod = learningPath.modules[mIndex];
+      const lIndex = mod.lessons.findIndex((l) => l.id === lessonId);
+      if (lIndex !== -1) {
+        currentLesson = mod.lessons[lIndex];
+        currentModule = mod;
+        currentModuleIndex = mIndex;
+        currentLessonIndex = lIndex;
+        break;
+      }
+    }
+  } else {
+    // efficient find: first incomplete lesson
+    for (let mIndex = 0; mIndex < learningPath.modules.length; mIndex++) {
+      const mod = learningPath.modules[mIndex];
+      const lIndex = mod.lessons.findIndex((l) => !l.isCompleted);
+      if (lIndex !== -1) {
+        currentLesson = mod.lessons[lIndex];
+        currentModule = mod;
+        currentModuleIndex = mIndex;
+        currentLessonIndex = lIndex;
+        break;
+      }
+    }
+
+    // If all completed, show the very last lesson
+    if (!currentLesson && learningPath.modules.length > 0) {
+      const lastModule = learningPath.modules[learningPath.modules.length - 1];
+      if (lastModule.lessons.length > 0) {
+        currentModule = lastModule;
+        currentModuleIndex = learningPath.modules.length - 1;
+        currentLesson = lastModule.lessons[lastModule.lessons.length - 1];
+        currentLessonIndex = lastModule.lessons.length - 1;
+      }
+    }
+  }
+
+  if (!currentLesson || !currentModule) {
+    return (
+      <div className="space-y-6">
+        <Card
+          className="rounded-xl! border-border!"
+          styles={{ body: { padding: 48 } }}
+        >
+          <Empty description="No lessons found in this learning path" />
+        </Card>
+      </div>
+    );
+  }
+
+  // Calculate navigations
+  let prevLessonId: string | undefined;
+  let nextLessonId: string | undefined;
+
+  // Previous
+  if (currentLessonIndex > 0) {
+    prevLessonId = currentModule.lessons[currentLessonIndex - 1].id;
+  } else if (currentModuleIndex > 0) {
+    const prevMod = learningPath.modules[currentModuleIndex - 1];
+    if (prevMod.lessons.length > 0) {
+      prevLessonId = prevMod.lessons[prevMod.lessons.length - 1].id;
+    }
+  }
+
+  // Next
+  if (currentLessonIndex < currentModule.lessons.length - 1) {
+    nextLessonId = currentModule.lessons[currentLessonIndex + 1].id;
+  } else if (currentModuleIndex < learningPath.modules.length - 1) {
+    const nextMod = learningPath.modules[currentModuleIndex + 1];
+    if (nextMod.lessons.length > 0) {
+      nextLessonId = nextMod.lessons[0].id;
+    }
+  }
+
+  // Module Stats
+  const completedInModule = currentModule.lessons.filter(
+    (l) => l.isCompleted,
+  ).length;
+  const totalInModule = currentModule.lessons.length;
+  const moduleProgress =
+    totalInModule > 0 ? (completedInModule / totalInModule) * 100 : 0;
+
   return (
     <div className="flex gap-6">
       {/* Main Content */}
@@ -27,20 +204,28 @@ export default function LessonsPage() {
         <div className="flex items-center justify-between mb-6">
           <Breadcrumb
             items={[
-              { title: "React Fundamentals" },
-              { title: "Lesson 3 of 5" },
+              { title: learningPath.title },
+              { title: currentModule.title },
+              { title: `Lesson ${currentLessonIndex + 1}` },
             ]}
             className="text-muted-foreground"
           />
           <Tag color="blue" className="rounded-full!">
-            15 min
+            ~15 min
           </Tag>
         </div>
 
         {/* Lesson Title */}
-        <h1 className="text-3xl font-bold text-foreground mb-8">
-          useEffect Hook
-        </h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold text-foreground">
+            {currentLesson.title}
+          </h1>
+          {currentLesson.isCompleted && (
+            <Tag color="success" icon={<CheckCircleFilled />}>
+              Completed
+            </Tag>
+          )}
+        </div>
 
         {/* Lesson Content */}
         <Card
@@ -48,92 +233,91 @@ export default function LessonsPage() {
           styles={{ body: { padding: 32 } }}
         >
           <div className="prose max-w-none">
-            <p className="text-muted-foreground text-lg leading-relaxed mb-6">
-              The useEffect Hook allows you to perform side effects in function
-              components. It serves the same purpose as componentDidMount,
-              componentDidUpdate, and componentWillUnmount combined in React
-              class components.
-            </p>
+            {/* Content - rending markdown as text for now, should ideally use a markdown renderer */}
+            <div className="whitespace-pre-wrap text-muted-foreground text-lg leading-relaxed mb-8">
+              {currentLesson.content}
+            </div>
 
-            <h2 className="text-xl font-semibold text-foreground mb-4">
-              What are Side Effects?
-            </h2>
-            <p className="text-muted-foreground mb-4">
-              Side effects are operations that affect something outside the
-              scope of the function being executed. Common examples include:
-            </p>
-            <ul className="list-disc list-inside text-muted-foreground mb-6 space-y-1">
-              <li>Fetching data from an API</li>
-              <li>Setting up subscriptions</li>
-              <li>Manually changing the DOM</li>
-              <li>Setting up timers</li>
-            </ul>
+            {/* Learning Objectives */}
+            {currentLesson.learningObjectives &&
+              currentLesson.learningObjectives.length > 0 && (
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-8">
+                  <h3 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <TrophyOutlined /> Learning Objectives
+                  </h3>
+                  <ul className="space-y-2 text-muted-foreground">
+                    {currentLesson.learningObjectives.map((obj, i) => (
+                      <li key={i} className="flex items-start gap-2">
+                        <CheckCircleFilled className="text-blue-500 mt-1" />
+                        {obj}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
-            <h2 className="text-xl font-semibold text-foreground mb-4">
-              Basic Syntax
-            </h2>
-            <pre className="bg-slate-800 text-white p-4 rounded-xl overflow-x-auto mb-6">
-              <code>{`import { useEffect } from 'react';
+            {/* Resources */}
+            {currentLesson.resources && currentLesson.resources.length > 0 && (
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold text-foreground mb-4">
+                  Resources
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {currentLesson.resources.map((res, i) => (
+                    <a
+                      key={i}
+                      href={res.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block p-4 border border-border rounded-xl hover:bg-slate-50 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
+                          <LinkOutlined />
+                        </div>
+                        <div>
+                          <p className="font-medium text-foreground">
+                            {res.title}
+                          </p>
+                          <p className="text-xs text-muted-foreground capitalize">
+                            {res.type}
+                          </p>
+                        </div>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
 
-function MyComponent() {
-  useEffect(() => {
-    // Your side effect code here
-    console.log('Component mounted!');
-  }, []);
-}`}</code>
-            </pre>
+            {/* Completion Action */}
+            <div className="flex flex-col items-center gap-4 mt-8">
+              {!currentLesson.isCompleted && (
+                <Button
+                  type="primary"
+                  size="large"
+                  className="h-12! px-8! rounded-xl!"
+                  icon={<CheckCircleFilled />}
+                  loading={markingComplete}
+                  onClick={() => handleMarkComplete(currentLesson!.id)}
+                >
+                  Mark as Complete
+                </Button>
+              )}
 
-            <h2 className="text-xl font-semibold text-foreground mb-4">
-              Dependency Array
-            </h2>
-            <p className="text-muted-foreground mb-4">
-              The second argument to useEffect is an array of dependencies. The
-              effect will only re-run if one of the dependencies has changed.
-            </p>
-            <pre className="bg-slate-800 text-white p-4 rounded-xl overflow-x-auto mb-6">
-              <code>{`useEffect(() => {
-  // This runs only when 'count' changes
-  document.title = \`You clicked \${count} times\`;
-}, [count]);`}</code>
-            </pre>
-
-            <h2 className="text-xl font-semibold text-foreground mb-4">
-              Cleanup Function
-            </h2>
-            <p className="text-muted-foreground mb-4">
-              Effects can optionally return a cleanup function that React will
-              run before the component unmounts or before re-running the effect.
-            </p>
-            <pre className="bg-slate-800 text-white p-4 rounded-xl overflow-x-auto mb-6">
-              <code>{`useEffect(() => {
-  const subscription = subscribeToData();
-
-  return () => {
-    // Cleanup
-    subscription.unsubscribe();
-  };
-}, []);`}</code>
-            </pre>
-
-            {/* Key Takeaways */}
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mt-8">
-              <h3 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
-                💡 Key Takeaways
-              </h3>
-              <ul className="space-y-2 text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <CheckCircleFilled className="text-green-500 mt-1" />
-                  useEffect runs after every render by default
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircleFilled className="text-green-500 mt-1" />
-                  Use the dependency array to control when effects run
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircleFilled className="text-green-500 mt-1" />
-                  Always cleanup side effects to prevent memory leaks
-                </li>
-              </ul>
+              {currentLesson.quiz && (
+                <Link href={`/quizzes?lessonId=${currentLesson.id}`}>
+                  <Button
+                    size="large"
+                    className="h-12! px-8! rounded-xl!"
+                    icon={<TrophyOutlined />}
+                  >
+                    {currentLesson.quiz.userScore !== undefined
+                      ? `View Quiz Results (${currentLesson.quiz.userScore}%)`
+                      : "Take Lesson Quiz"}
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
         </Card>
@@ -143,6 +327,10 @@ function MyComponent() {
           <Button
             icon={<ArrowLeftOutlined />}
             className="rounded-lg! border-border!"
+            disabled={!prevLessonId}
+            onClick={() =>
+              prevLessonId && router.push(`/lessons?lessonId=${prevLessonId}`)
+            }
           >
             Previous Lesson
           </Button>
@@ -151,6 +339,10 @@ function MyComponent() {
             icon={<ArrowRightOutlined />}
             iconPlacement="end"
             className="rounded-lg! bg-linear-to-r! from-primary! to-secondary! border-0!"
+            disabled={!nextLessonId}
+            onClick={() =>
+              nextLessonId && router.push(`/lessons?lessonId=${nextLessonId}`)
+            }
           >
             Next Lesson
           </Button>
@@ -158,58 +350,56 @@ function MyComponent() {
       </div>
 
       {/* Sidebar */}
-      <div className="w-72 space-y-4">
+      <div className="w-80 space-y-4 hidden xl:block">
         {/* Module Progress */}
         <Card
           className="rounded-xl! border-border!"
           styles={{ body: { padding: 20 } }}
         >
           <h3 className="font-semibold text-foreground mb-4">
-            Module Progress
+            {currentModule.title}
           </h3>
-          <div className="space-y-3">
-            {moduleItems.map((item, index) => (
-              <div
-                key={index}
-                className={`flex items-center gap-3 p-2 rounded-lg ${
-                  item.active ? "bg-primary/10" : ""
-                }`}
-              >
-                {item.completed ? (
-                  <CheckCircleFilled className="text-green-500" />
-                ) : (
-                  <div
-                    className={`w-4 h-4 rounded-full border-2 ${
-                      item.active ? "border-primary" : "border-gray-300"
-                    }`}
-                  />
-                )}
-                <span
-                  className={`text-sm ${
-                    item.active
-                      ? "text-primary font-medium"
-                      : item.completed
-                        ? "text-muted-foreground"
-                        : "text-muted-foreground"
+          <div className="space-y-1 max-h-[400px] overflow-y-auto pr-2">
+            {currentModule.lessons.map((lesson, index) => {
+              const isActive = lesson.id === currentLesson?.id;
+              return (
+                <div
+                  key={lesson.id}
+                  onClick={() => router.push(`/lessons?lessonId=${lesson.id}`)}
+                  className={`flex items-start gap-3 p-2 rounded-lg cursor-pointer transition-colors ${
+                    isActive ? "bg-primary/10" : "hover:bg-slate-50"
                   }`}
                 >
-                  {item.title}
-                </span>
-              </div>
-            ))}
+                  {lesson.isCompleted ? (
+                    <CheckCircleFilled className="text-green-500 mt-1 shrink-0" />
+                  ) : (
+                    <div
+                      className={`w-4 h-4 rounded-full border-2 mt-1 shrink-0 ${
+                        isActive ? "border-primary" : "border-gray-300"
+                      }`}
+                    />
+                  )}
+                  <div className="flex-1">
+                    <p
+                      className={`text-sm leading-tight ${
+                        isActive
+                          ? "text-primary font-medium"
+                          : lesson.isCompleted
+                            ? "text-muted-foreground"
+                            : "text-foreground"
+                      }`}
+                    >
+                      {lesson.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Lesson {index + 1}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </Card>
-
-        {/* AI Tutor Button */}
-        <Button
-          type="primary"
-          block
-          size="large"
-          icon={<RobotOutlined />}
-          className="rounded-xl! bg-primary! h-12!"
-        >
-          Ask AI Tutor
-        </Button>
 
         {/* Stats */}
         <Card
@@ -218,18 +408,18 @@ function MyComponent() {
         >
           <div className="space-y-4">
             <div>
-              <p className="text-sm text-muted-foreground mb-1">
-                Module Progress
-              </p>
-              <div className="flex items-center gap-2">
-                <Progress
-                  percent={40}
-                  showInfo={false}
-                  strokeColor="#4f46e5"
-                  className="flex-1!"
-                />
-                <span className="text-sm font-medium">40%</span>
+              <div className="flex justify-between mb-1">
+                <p className="text-sm text-muted-foreground">Module Progress</p>
+                <span className="text-sm font-medium">
+                  {Math.round(moduleProgress)}%
+                </span>
               </div>
+              <Progress
+                percent={Math.round(moduleProgress)}
+                showInfo={false}
+                strokeColor="#4f46e5"
+                className="mb-0!"
+              />
             </div>
             <div>
               <p className="text-sm text-muted-foreground mb-1">
@@ -242,7 +432,34 @@ function MyComponent() {
             </div>
           </div>
         </Card>
+
+        {/* AI Tutor Button */}
+        <Link href="/ai-chat">
+          <Button
+            type="primary"
+            block
+            size="large"
+            icon={<RobotOutlined />}
+            className="rounded-xl! bg-primary! h-12!"
+          >
+            Ask AI Tutor about this
+          </Button>
+        </Link>
       </div>
     </div>
+  );
+}
+
+export default function LessonsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex justify-center p-12">
+          <Spin size="large" />
+        </div>
+      }
+    >
+      <LessonsContent />
+    </Suspense>
   );
 }

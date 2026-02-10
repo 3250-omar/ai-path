@@ -1,70 +1,82 @@
 "use client";
 
-import { useState } from "react";
-import { Button, Card, Radio, Progress, message } from "antd";
-import { CheckCircleFilled, CloseCircleFilled } from "@ant-design/icons";
+import { useEffect, useState, Suspense } from "react";
+import { Button, Card, Radio, Progress, message, Spin, Empty } from "antd";
+import {
+  CheckCircleFilled,
+  CloseCircleFilled,
+  ArrowLeftOutlined,
+} from "@ant-design/icons";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
+import type { Quiz, Lesson } from "@/types/learning-path";
 
-// Quiz data
-const quizData = {
-  title: "React Hooks Quiz",
-  subtitle: "Test your knowledge of useEffect",
-  questions: [
-    {
-      id: 1,
-      question: "What is the primary purpose of the useEffect Hook in React?",
-      options: [
-        "To manage component state",
-        "To perform side effects in function components",
-        "To create custom components",
-        "To handle user events",
-      ],
-      correct: 1,
-    },
-    {
-      id: 2,
-      question: "When does useEffect run by default?",
-      options: [
-        "Only on mount",
-        "Only on unmount",
-        "After every render",
-        "Never automatically",
-      ],
-      correct: 2,
-    },
-    {
-      id: 3,
-      question: "What does an empty dependency array ([]) mean in useEffect?",
-      options: [
-        "Effect runs on every render",
-        "Effect never runs",
-        "Effect runs only once on mount",
-        "Effect runs only on unmount",
-      ],
-      correct: 2,
-    },
-  ],
-};
+function QuizzesContent() {
+  const searchParams = useSearchParams();
+  const lessonId = searchParams.get("lessonId");
 
-export default function QuizzesPage() {
-  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [quiz, setQuiz] = useState<Quiz | null>(null);
+  const [lessonTitle, setLessonTitle] = useState<string>("");
+
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const question = quizData.questions[currentQuestion];
-  const progress = (currentQuestion / quizData.questions.length) * 100;
+  useEffect(() => {
+    const fetchActiveLearningPath = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch("/api/learning-path/active");
+        const data = await res.json();
 
-  const handleSubmit = () => {
-    if (selectedAnswer === null) {
+        if (data.success && data.path && lessonId) {
+          // Find quiz for this lesson
+          let foundQuiz: Quiz | null = null;
+          let foundTitle = "";
+
+          for (const mod of data.path.modules) {
+            const lesson = mod.lessons.find((l: Lesson) => l.id === lessonId);
+            if (lesson) {
+              foundTitle = lesson.title;
+              if (lesson.quiz) {
+                foundQuiz = lesson.quiz;
+              }
+              break;
+            }
+          }
+
+          if (foundQuiz) {
+            setQuiz(foundQuiz);
+            setLessonTitle(foundTitle);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch active learning path:", err);
+        message.error("Failed to load quiz");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchActiveLearningPath();
+  }, [lessonId]);
+
+  const currentQuestion = quiz?.questions[currentQuestionIndex];
+
+  const handleSubmitAnswer = () => {
+    if (selectedAnswer === null || !currentQuestion) {
       message.warning("Please select an answer");
       return;
     }
 
     setAnswered(true);
 
-    if (selectedAnswer === question.correct) {
-      setScore(score + 1);
+    if (selectedAnswer === currentQuestion.correctAnswer) {
+      setScore((prev) => prev + 1);
       message.success("Correct! 🎉");
     } else {
       message.error("Incorrect. The correct answer is highlighted.");
@@ -72,21 +84,82 @@ export default function QuizzesPage() {
   };
 
   const handleNext = () => {
-    if (currentQuestion < quizData.questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
+    if (!quiz) return;
+
+    if (currentQuestionIndex < quiz.questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
       setSelectedAnswer(null);
       setAnswered(false);
     } else {
-      setShowResult(true);
+      finishQuiz();
     }
   };
 
+  const finishQuiz = async () => {
+    if (!quiz) return;
+
+    const finalScore = Math.round((score / quiz.questions.length) * 100);
+    setShowResult(true);
+
+    // Submit result to API
+    try {
+      setSubmitting(true);
+      const res = await fetch(`/api/quizzes/${quiz.id}/submit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ score: finalScore }),
+      });
+
+      const data = await res.json();
+      if (!data.success) {
+        console.error("Failed to save score:", data.error);
+        message.warning("Failed to save score");
+      } else {
+        message.success("Quiz completed!");
+      }
+    } catch (err) {
+      console.error("Error submitting quiz:", err);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <Spin size="large" />
+      </div>
+    );
+  }
+
+  if (!quiz) {
+    return (
+      <div className="max-w-2xl mx-auto py-12">
+        <Empty description="Quiz not found or no lesson selected">
+          <Link href="/dashboard">
+            <Button type="primary">Back to Dashboard</Button>
+          </Link>
+        </Empty>
+      </div>
+    );
+  }
+
   if (showResult) {
-    const percentage = Math.round((score / quizData.questions.length) * 100);
+    const percentage = Math.round((score / quiz.questions.length) * 100);
     return (
       <div className="max-w-2xl mx-auto">
+        <div className="mb-6">
+          <Link
+            href={lessonId ? `/lessons?lessonId=${lessonId}` : "/dashboard"}
+          >
+            <Button icon={<ArrowLeftOutlined />} type="text">
+              Back to Lesson
+            </Button>
+          </Link>
+        </div>
+
         <Card
-          className="!rounded-xl !border-border text-center"
+          className="rounded-xl! border-border! text-center"
           styles={{ body: { padding: 48 } }}
         >
           <div className="text-6xl mb-4">
@@ -96,7 +169,7 @@ export default function QuizzesPage() {
             Quiz Complete!
           </h1>
           <p className="text-muted-foreground mb-6">
-            You scored {score} out of {quizData.questions.length}
+            You scored {score} out of {quiz.questions.length}
           </p>
           <Progress
             type="circle"
@@ -104,10 +177,10 @@ export default function QuizzesPage() {
             size={120}
             strokeColor={
               percentage >= 70
-                ? "#22c55e"
+                ? "#22c55e" // green-500
                 : percentage >= 50
-                  ? "#f59e0b"
-                  : "#ef4444"
+                  ? "#f59e0b" // amber-500
+                  : "#ef4444" // red-500
             }
             format={(percent) => (
               <span className="text-2xl font-bold">{percent}%</span>
@@ -117,23 +190,28 @@ export default function QuizzesPage() {
             <Button
               size="large"
               onClick={() => {
-                setCurrentQuestion(0);
+                setCurrentQuestionIndex(0);
                 setScore(0);
                 setSelectedAnswer(null);
                 setAnswered(false);
                 setShowResult(false);
               }}
-              className="!rounded-lg"
+              className="rounded-lg!"
             >
               Retry Quiz
             </Button>
-            <Button
-              type="primary"
-              size="large"
-              className="!rounded-lg !bg-primary"
+
+            <Link
+              href={lessonId ? `/lessons?lessonId=${lessonId}` : "/dashboard"}
             >
-              Continue Learning
-            </Button>
+              <Button
+                type="primary"
+                size="large"
+                className="rounded-lg! bg-primary!"
+              >
+                Back to Lesson
+              </Button>
+            </Link>
           </div>
         </Card>
       </div>
@@ -145,14 +223,25 @@ export default function QuizzesPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
+          <Link
+            href={lessonId ? `/lessons?lessonId=${lessonId}` : "/dashboard"}
+          >
+            <Button
+              icon={<ArrowLeftOutlined />}
+              type="text"
+              className="mb-2 p-0"
+            >
+              Back to Lesson
+            </Button>
+          </Link>
           <h1 className="text-2xl font-bold text-foreground">
-            {quizData.title}
+            Quiz: {lessonTitle}
           </h1>
-          <p className="text-muted-foreground">{quizData.subtitle}</p>
+          <p className="text-muted-foreground">Test your knowledge</p>
         </div>
         <div className="text-right">
           <p className="text-sm text-primary font-medium">
-            Question {currentQuestion + 1}/{quizData.questions.length}
+            Question {currentQuestionIndex + 1}/{quiz.questions.length}
           </p>
         </div>
       </div>
@@ -161,24 +250,26 @@ export default function QuizzesPage() {
       <div className="flex items-center justify-between mb-6">
         <div className="flex-1">
           <Progress
-            percent={progress}
+            percent={Math.round(
+              (currentQuestionIndex / quiz.questions.length) * 100,
+            )}
             showInfo={false}
             strokeColor="#4f46e5"
-            trailColor="#e5e7eb"
+            railColor="#e5e7eb"
           />
         </div>
         <span className="ml-4 text-sm text-muted-foreground">
-          Score: {score}/{quizData.questions.length}
+          Score: {score}/{quiz.questions.length}
         </span>
       </div>
 
       {/* Question Card */}
       <Card
-        className="!rounded-xl !border-border"
+        className="rounded-xl! border-border!"
         styles={{ body: { padding: 32 } }}
       >
         <h2 className="text-lg font-semibold text-foreground mb-6">
-          {question.question}
+          {currentQuestion?.question}
         </h2>
 
         <Radio.Group
@@ -188,8 +279,8 @@ export default function QuizzesPage() {
           disabled={answered}
         >
           <div className="space-y-3">
-            {question.options.map((option, index) => {
-              const isCorrect = index === question.correct;
+            {currentQuestion?.options.map((option, index) => {
+              const isCorrect = index === currentQuestion.correctAnswer;
               const isSelected = selectedAnswer === index;
 
               return (
@@ -240,16 +331,32 @@ export default function QuizzesPage() {
           type="primary"
           size="large"
           block
-          onClick={answered ? handleNext : handleSubmit}
-          className="!mt-8 !h-12 !rounded-xl !bg-gradient-to-r !from-primary !to-secondary !border-0"
+          onClick={answered ? handleNext : handleSubmitAnswer}
+          disabled={selectedAnswer === null && !answered}
+          loading={submitting}
+          className="mt-8! h-12! rounded-xl! bg-linear-to-r! from-primary! to-secondary! border-0!"
         >
           {answered
-            ? currentQuestion < quizData.questions.length - 1
+            ? currentQuestionIndex < quiz.questions.length - 1
               ? "Next Question"
               : "See Results"
             : "Submit Answer"}
         </Button>
       </Card>
     </div>
+  );
+}
+
+export default function QuizzesPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center h-screen">
+          <Spin size="large" />
+        </div>
+      }
+    >
+      <QuizzesContent />
+    </Suspense>
   );
 }

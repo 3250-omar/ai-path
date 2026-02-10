@@ -106,6 +106,7 @@ export default function OnboardingPage() {
             placeholder="Example: I want to become a Full Stack Web Developer and learn React, Node.js, and databases..."
             className="!rounded-xl !bg-blue-50/50 !border-blue-100 !min-h-[140px] !text-base !p-4"
             autoSize={{ minRows: 5, maxRows: 8 }}
+            disabled={loading}
           />
         </div>
 

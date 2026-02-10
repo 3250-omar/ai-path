@@ -224,7 +224,7 @@ export default function ProgressPage() {
                   percent={topic.progress}
                   showInfo={false}
                   strokeColor={topic.color}
-                  trailColor="#e5e7eb"
+                  railColor="#e5e7eb"
                 />
               </div>
               <span

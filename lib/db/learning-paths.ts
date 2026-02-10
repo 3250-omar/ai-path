@@ -318,18 +318,24 @@ export async function markLessonComplete(
     completed_at: new Date().toISOString(),
   };
 
-  // Verify ownership through joins
+  // Verify ownership and get module_id
+  const { data: moduleId, error: rpcError } = await supabase.rpc(
+    "verify_lesson_ownership",
+    {
+      lesson_id: lessonId,
+      user_id: userId,
+    },
+  );
+
+  if (rpcError || !moduleId) {
+    throw new Error("Unauthorized or lesson not found");
+  }
+
   const { error } = await supabase
     .from("lessons")
     .update(updates)
     .eq("id", lessonId)
-    .eq(
-      "module_id",
-      supabase.rpc("verify_lesson_ownership", {
-        lesson_id: lessonId,
-        user_id: userId,
-      }),
-    );
+    .eq("module_id", moduleId);
 
   if (error)
     throw new Error(`Failed to mark lesson complete: ${error.message}`);

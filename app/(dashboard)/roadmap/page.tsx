@@ -1,67 +1,113 @@
 "use client";
 
-import { Button, Card, Progress, Tag } from "antd";
+import { useEffect, useState } from "react";
+import { Button, Card, Progress, Tag, Spin, Empty } from "antd";
 import {
   CheckCircleFilled,
   PlayCircleOutlined,
   LockOutlined,
   ArrowRightOutlined,
 } from "@ant-design/icons";
-
-// Roadmap modules
-const modules = [
-  {
-    id: 1,
-    title: "Fundamentals",
-    description: "Master fundamentals concepts and practices",
-    weeks: 3,
-    topics: 10,
-    status: "completed",
-    progress: 100,
-  },
-  {
-    id: 2,
-    title: "Core Concepts",
-    description: "Master core concepts concepts and practices",
-    weeks: 5,
-    topics: 15,
-    status: "completed",
-    progress: 100,
-  },
-  {
-    id: 3,
-    title: "Intermediate Skills",
-    description: "Master intermediate skills concepts and practices",
-    weeks: 4,
-    topics: 12,
-    status: "in-progress",
-    progress: 60,
-  },
-  {
-    id: 4,
-    title: "Advanced Topics",
-    description: "Master advanced topics concepts and practices",
-    weeks: 5,
-    topics: 14,
-    status: "in-progress",
-    progress: 20,
-  },
-  {
-    id: 5,
-    title: "Real-world Projects",
-    description: "Master real-world projects concepts and practices",
-    weeks: 3,
-    topics: 8,
-    status: "locked",
-    progress: 0,
-  },
-];
+import type { LearningPath, Module } from "@/types/learning-path";
+import Link from "next/link";
 
 export default function RoadmapPage() {
-  const overallProgress = 45;
-  const completedModules = 2;
-  const totalModules = 8;
-  const estimatedWeeks = 18;
+  const [learningPath, setLearningPath] = useState<LearningPath | null>(null);
+  const [loading, setLoading] = useState(true);
+  // const router = useRouter(); // Removed unused router
+
+  useEffect(() => {
+    fetchActiveLearningPath();
+  }, []);
+
+  const fetchActiveLearningPath = async () => {
+    try {
+      const res = await fetch("/api/learning-path/active");
+      const data = await res.json();
+
+      if (data.success && data.path) {
+        setLearningPath(data.path);
+      }
+    } catch (err) {
+      console.error("Failed to fetch active learning path:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const calculateOverallProgress = () => {
+    if (!learningPath) return 0;
+    const totalLessons = learningPath.modules.reduce(
+      (sum, mod) => sum + mod.lessons.length,
+      0,
+    );
+    const completedLessons = learningPath.modules.reduce(
+      (sum, mod) => sum + mod.lessons.filter((l) => l.isCompleted).length,
+      0,
+    );
+    return totalLessons > 0
+      ? Math.round((completedLessons / totalLessons) * 100)
+      : 0;
+  };
+
+  const getModuleStatus = (module: Module, moduleIndex: number) => {
+    const allCompleted = module.lessons.every((l) => l.isCompleted);
+    const someCompleted = module.lessons.some((l) => l.isCompleted);
+
+    if (allCompleted) return "completed";
+    if (someCompleted) return "in-progress";
+
+    // Check if previous module is complete
+    if (moduleIndex === 0) return "in-progress";
+    const previousModule = learningPath?.modules[moduleIndex - 1];
+    const previousComplete = previousModule?.lessons.every(
+      (l) => l.isCompleted,
+    );
+
+    return previousComplete ? "in-progress" : "locked";
+  };
+
+  const getFirstIncompleteLessonId = (module: Module) => {
+    const incompleteLesson = module.lessons.find((l) => !l.isCompleted);
+    return incompleteLesson?.id;
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <Spin size="large" />
+      </div>
+    );
+  }
+
+  if (!learningPath) {
+    return (
+      <div className="space-y-6">
+        <Card
+          className="rounded-xl! border-border!"
+          styles={{ body: { padding: 48 } }}
+        >
+          <Empty description="No active learning path found">
+            <Link href="/onboarding">
+              <Button
+                type="primary"
+                icon={<ArrowRightOutlined />}
+                className="rounded-lg! bg-primary!"
+              >
+                Create Learning Path
+              </Button>
+            </Link>
+          </Empty>
+        </Card>
+      </div>
+    );
+  }
+
+  const overallProgress = calculateOverallProgress();
+  const completedModules = learningPath.modules.filter((m) =>
+    m.lessons.every((l) => l.isCompleted),
+  ).length;
+  const totalModules = learningPath.modules.length;
 
   return (
     <div className="space-y-6">
@@ -75,18 +121,20 @@ export default function RoadmapPage() {
             Follow your personalized path to mastery
           </p>
         </div>
-        <Button
-          type="primary"
-          className="!rounded-lg !bg-primary"
-          icon={<ArrowRightOutlined />}
-        >
-          Custom Learning Path
-        </Button>
+        <Link href="/onboarding">
+          <Button
+            type="default"
+            className="rounded-lg! border-border!"
+            icon={<ArrowRightOutlined />}
+          >
+            Create New Path
+          </Button>
+        </Link>
       </div>
 
       {/* Progress Overview */}
       <Card
-        className="!rounded-xl !border-border !bg-gradient-to-r !from-slate-800 !to-slate-900"
+        className="rounded-xl! border-border! bg-linear-to-r! from-slate-800! to-slate-900!"
         styles={{ body: { padding: 24 } }}
       >
         <div className="flex items-center justify-between text-white">
@@ -101,141 +149,166 @@ export default function RoadmapPage() {
             </p>
           </div>
           <div>
-            <p className="text-white/60 text-sm mb-1">Estimated Time Left</p>
-            <p className="text-3xl font-bold">{estimatedWeeks} weeks</p>
+            <p className="text-white/60 text-sm mb-1">Learning Path</p>
+            <p className="text-xl font-bold">{learningPath.title}</p>
           </div>
         </div>
       </Card>
 
       {/* Modules Timeline */}
       <div className="space-y-4">
-        {modules.map((module, index) => (
-          <Card
-            key={module.id}
-            className="!rounded-xl !border-border"
-            styles={{ body: { padding: 24 } }}
-          >
-            <div className="flex items-start gap-4">
-              {/* Timeline Dot */}
-              <div className="flex flex-col items-center">
-                <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                    module.status === "completed"
-                      ? "bg-green-500"
-                      : module.status === "in-progress"
-                        ? "bg-primary"
-                        : "bg-gray-200"
-                  }`}
-                >
-                  {module.status === "completed" ? (
-                    <CheckCircleFilled className="text-white text-lg" />
-                  ) : module.status === "in-progress" ? (
-                    <PlayCircleOutlined className="text-white text-lg" />
-                  ) : (
-                    <LockOutlined className="text-gray-400 text-lg" />
+        {learningPath.modules.map((module, index) => {
+          const completedLessons = module.lessons.filter(
+            (l) => l.isCompleted,
+          ).length;
+          const totalLessons = module.lessons.length;
+          const moduleProgress =
+            totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0;
+          const status = getModuleStatus(module, index);
+          const firstIncompleteLessonId = getFirstIncompleteLessonId(module);
+
+          return (
+            <Card
+              key={module.id}
+              className="rounded-xl! border-border!"
+              styles={{ body: { padding: 24 } }}
+            >
+              <div className="flex items-start gap-4">
+                {/* Timeline Dot */}
+                <div className="flex flex-col items-center">
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                      status === "completed"
+                        ? "bg-green-500"
+                        : status === "in-progress"
+                          ? "bg-primary"
+                          : "bg-gray-200"
+                    }`}
+                  >
+                    {status === "completed" ? (
+                      <CheckCircleFilled className="text-white text-lg" />
+                    ) : status === "in-progress" ? (
+                      <PlayCircleOutlined className="text-white text-lg" />
+                    ) : (
+                      <LockOutlined className="text-gray-400 text-lg" />
+                    )}
+                  </div>
+                  {index < learningPath.modules.length - 1 && (
+                    <div className="w-0.5 h-8 bg-gray-200 mt-2" />
                   )}
                 </div>
-                {index < modules.length - 1 && (
-                  <div className="w-0.5 h-8 bg-gray-200 mt-2" />
-                )}
-              </div>
 
-              {/* Module Content */}
-              <div className="flex-1">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="text-lg font-semibold text-foreground mb-1">
-                      {module.title}
-                    </h3>
-                    <p className="text-sm text-muted-foreground mb-2">
-                      {module.description}
-                    </p>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span>⏱ {module.weeks} weeks</span>
-                      <span>📚 {module.topics} topics</span>
-                      <Tag
-                        color={
-                          module.status === "completed"
-                            ? "green"
-                            : module.status === "in-progress"
-                              ? "blue"
-                              : "default"
-                        }
+                {/* Module Content */}
+                <div className="flex-1">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold text-foreground mb-1">
+                        {module.title}
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        {module.description}
+                      </p>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <span>⏱ {module.estimatedDurationHours} hours</span>
+                        <span>📚 {module.lessons.length} lessons</span>
+                        <Tag
+                          color={
+                            status === "completed"
+                              ? "green"
+                              : status === "in-progress"
+                                ? "blue"
+                                : "default"
+                          }
+                        >
+                          {status === "completed"
+                            ? "Completed"
+                            : status === "in-progress"
+                              ? "In Progress"
+                              : "Locked"}
+                        </Tag>
+                      </div>
+                    </div>
+
+                    {/* Action Button */}
+                    {status !== "locked" && firstIncompleteLessonId && (
+                      <Link
+                        href={`/lessons?lessonId=${firstIncompleteLessonId}`}
                       >
-                        {module.status === "completed"
-                          ? "Completed"
-                          : module.status === "in-progress"
-                            ? "In Progress"
-                            : "Locked"}
-                      </Tag>
-                    </div>
+                        <Button
+                          type={
+                            status === "in-progress" ? "primary" : "default"
+                          }
+                          className={`rounded-lg! ${
+                            status === "in-progress" ? "bg-primary!" : ""
+                          }`}
+                          icon={
+                            status === "in-progress" ? (
+                              <PlayCircleOutlined />
+                            ) : null
+                          }
+                        >
+                          {status === "completed" ? "Review" : "Continue"}
+                        </Button>
+                      </Link>
+                    )}
                   </div>
 
-                  {/* Action Button */}
-                  {module.status !== "locked" && (
-                    <Button
-                      type={
-                        module.status === "in-progress" ? "primary" : "default"
-                      }
-                      className={`!rounded-lg ${
-                        module.status === "in-progress" ? "!bg-primary" : ""
-                      }`}
-                      icon={
-                        module.status === "in-progress" ? (
-                          <PlayCircleOutlined />
-                        ) : null
-                      }
-                    >
-                      {module.status === "completed" ? "Review" : "Continue"}
-                    </Button>
+                  {/* Progress Bar */}
+                  {status !== "locked" && (
+                    <div className="mt-4">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm text-muted-foreground">
+                          Progress
+                        </span>
+                        <span className="text-sm font-medium text-primary">
+                          {Math.round(moduleProgress)}%
+                        </span>
+                      </div>
+                      <Progress
+                        percent={Math.round(moduleProgress)}
+                        showInfo={false}
+                        strokeColor="#4f46e5"
+                        railColor="#e5e7eb"
+                      />
+                    </div>
                   )}
                 </div>
-
-                {/* Progress Bar */}
-                {module.status !== "locked" && (
-                  <div className="mt-4">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm text-muted-foreground">
-                        Progress
-                      </span>
-                      <span className="text-sm font-medium text-primary">
-                        {module.progress}%
-                      </span>
-                    </div>
-                    <Progress
-                      percent={module.progress}
-                      showInfo={false}
-                      strokeColor="#4f46e5"
-                      trailColor="#e5e7eb"
-                    />
-                  </div>
-                )}
               </div>
-            </div>
-          </Card>
-        ))}
+            </Card>
+          );
+        })}
       </div>
 
       {/* CTA Banner */}
-      <Card
-        className="!rounded-xl !border-0 !bg-gradient-to-r !from-slate-800 !to-slate-900"
-        styles={{ body: { padding: 32 } }}
-      >
-        <div className="text-center text-white">
-          <h2 className="text-xl font-bold mb-2">
-            Ready for the next challenge?
-          </h2>
-          <p className="text-white/70 mb-4">
-            Continue with State Management and level up your skills
-          </p>
-          <Button
-            className="!bg-white !text-slate-900 !border-0 !rounded-lg !font-medium"
-            icon={<ArrowRightOutlined />}
-          >
-            Start Next Lesson
-          </Button>
-        </div>
-      </Card>
+      {overallProgress < 100 && (
+        <Card
+          className="rounded-xl! border-0! bg-linear-to-r! from-slate-800! to-slate-900!"
+          styles={{ body: { padding: 32 } }}
+        >
+          <div className="text-center text-white">
+            <h2 className="text-xl font-bold mb-2">
+              Ready for the next challenge?
+            </h2>
+            <p className="text-white/70 mb-4">
+              Continue your learning journey and level up your skills
+            </p>
+            {learningPath.modules.find((m) => !m.isCompleted) && (
+              <Link
+                href={`/lessons?lessonId=${getFirstIncompleteLessonId(
+                  learningPath.modules.find((m) => !m.isCompleted)!,
+                )}`}
+              >
+                <Button
+                  className="bg-white! text-slate-900! border-0! rounded-lg! font-medium!"
+                  icon={<ArrowRightOutlined />}
+                >
+                  Continue Learning
+                </Button>
+              </Link>
+            )}
+          </div>
+        </Card>
+      )}
     </div>
   );
 }

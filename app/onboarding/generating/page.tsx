@@ -44,8 +44,8 @@ export default function GeneratingPage() {
           sessionStorage.removeItem("pathTitle");
           sessionStorage.removeItem("learningGoal");
 
-          // Redirect to the learning path view
-          router.push(`/learning-path/${pathId}`);
+          // Redirect to dashboard
+          router.push("/dashboard");
         }, 500);
         return;
       }

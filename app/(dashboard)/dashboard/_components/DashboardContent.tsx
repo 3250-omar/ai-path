@@ -1,105 +1,151 @@
 "use client";
 
-import { Button, Card, Progress, Tag } from "antd";
+import { useEffect, useState } from "react";
+import { Button, Card, Progress, Tag, Spin, Empty } from "antd";
 import {
   ArrowRightOutlined,
   BookOutlined,
   TrophyOutlined,
   FireOutlined,
   ClockCircleOutlined,
-  PlayCircleFilled,
 } from "@ant-design/icons";
 import Link from "next/link";
 import { User } from "@supabase/supabase-js";
-import { signOut } from "../../../(auth)/actions";
-
-// Stats data
-const stats = [
-  {
-    icon: <BookOutlined />,
-    value: "24",
-    total: "/80",
-    label: "Lessons Completed",
-    color: "bg-primary",
-  },
-  {
-    icon: <TrophyOutlined />,
-    value: "8",
-    label: "Badges Earned",
-    color: "bg-amber-500",
-  },
-  {
-    icon: <FireOutlined />,
-    value: "12",
-    suffix: "days",
-    label: "Day Streak",
-    color: "bg-orange-500",
-  },
-  {
-    icon: <ClockCircleOutlined />,
-    value: "48",
-    suffix: "hrs",
-    label: "Hours Studied",
-    color: "bg-green-500",
-  },
-];
-
-// Today's tasks
-const todaysTasks = [
-  {
-    id: 1,
-    title: "Complete React Hooks lesson",
-    duration: "30 min",
-    status: "in-progress",
-  },
-  {
-    id: 2,
-    title: "Take TypeScript quiz",
-    duration: "15 min",
-    status: "in-progress",
-  },
-  {
-    id: 3,
-    title: "Practice State Management",
-    duration: "45 min",
-    status: "pending",
-  },
-  {
-    id: 4,
-    title: "Review Components chapter",
-    duration: "20 min",
-    status: "pending",
-  },
-];
-
-// Weekly plan
-const weeklyPlan = [
-  { day: "Mon", tasks: 3, color: "bg-primary" },
-  { day: "Tue", tasks: 4, color: "bg-primary" },
-  { day: "Wed", tasks: 3, color: "bg-primary" },
-  { day: "Thu", tasks: 0, color: "" },
-  { day: "Fri", tasks: 0, color: "" },
-  { day: "Sat", tasks: 0, color: "" },
-  { day: "Sun", tasks: 0, color: "" },
-];
-
-// Recent badges
-const recentBadges = [
-  { name: "Beginner", icon: "🌱", color: "bg-green-100" },
-  { name: "Explorer", icon: "🚀", color: "bg-purple-100" },
-  { name: "Consistent", icon: "⚡", color: "bg-yellow-100" },
-  { name: "Master", icon: "👑", color: "bg-amber-100" },
-];
+import type { LearningPath } from "@/types/learning-path";
 
 interface DashboardContentProps {
   user: User | null;
 }
 
 export default function DashboardContent({ user }: DashboardContentProps) {
+  const [learningPath, setLearningPath] = useState<LearningPath | null>(null);
+  const [loading, setLoading] = useState(true);
+
   const userName =
     user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Learner";
-  const completedTasks = 2;
-  const totalTasks = 4;
+
+  useEffect(() => {
+    fetchActiveLearningPath();
+  }, []);
+
+  const fetchActiveLearningPath = async () => {
+    try {
+      const res = await fetch("/api/learning-path/active");
+      const data = await res.json();
+
+      if (data.success && data.path) {
+        setLearningPath(data.path);
+      }
+    } catch (err) {
+      console.error("Failed to fetch active learning path:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Calculate stats from real data
+  const totalLessons =
+    learningPath?.modules.reduce((sum, mod) => sum + mod.lessons.length, 0) ||
+    0;
+  const completedLessons =
+    learningPath?.modules.reduce(
+      (sum, mod) => sum + mod.lessons.filter((l) => l.isCompleted).length,
+      0,
+    ) || 0;
+  const totalModules = learningPath?.modules.length || 0;
+  const completedModules =
+    learningPath?.modules.filter((m) => m.isCompleted).length || 0;
+  const progressPercentage =
+    totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+
+  // Find next incomplete module
+  const nextModule = learningPath?.modules.find((mod) => !mod.isCompleted);
+
+  // Get upcoming incomplete lessons as "today's tasks"
+  const upcomingLessons =
+    learningPath?.modules
+      .flatMap((mod) =>
+        mod.lessons
+          .filter((lesson) => !lesson.isCompleted)
+          .map((lesson) => ({ ...lesson, moduleName: mod.title })),
+      )
+      .slice(0, 4) || [];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <Spin size="large" />
+      </div>
+    );
+  }
+
+  // Empty state - no learning path
+  if (!learningPath) {
+    return (
+      <div className="space-y-6">
+        <Card
+          className="rounded-xl! border-border!"
+          styles={{ body: { padding: 48 } }}
+        >
+          <Empty
+            description={
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-foreground mb-2">
+                  Welcome, {userName}! 👋
+                </h2>
+                <p className="text-muted-foreground mb-4">
+                  You haven&apos;t created a learning path yet. Let&apos;s get
+                  started!
+                </p>
+              </div>
+            }
+          >
+            <Link href="/onboarding">
+              <Button
+                type="primary"
+                size="large"
+                icon={<ArrowRightOutlined />}
+                className="rounded-lg! bg-primary!"
+              >
+                Create Your Learning Path
+              </Button>
+            </Link>
+          </Empty>
+        </Card>
+      </div>
+    );
+  }
+
+  const stats = [
+    {
+      icon: <BookOutlined />,
+      value: completedLessons.toString(),
+      total: `/${totalLessons}`,
+      label: "Lessons Completed",
+      color: "bg-primary",
+    },
+    {
+      icon: <TrophyOutlined />,
+      value: completedModules.toString(),
+      total: `/${totalModules}`,
+      label: "Modules Completed",
+      color: "bg-amber-500",
+    },
+    {
+      icon: <FireOutlined />,
+      value: "0",
+      suffix: "days",
+      label: "Day Streak",
+      color: "bg-orange-500",
+    },
+    {
+      icon: <ClockCircleOutlined />,
+      value: learningPath.estimatedDurationHours.toString(),
+      suffix: "hrs",
+      label: "Total Duration",
+      color: "bg-green-500",
+    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -108,7 +154,7 @@ export default function DashboardContent({ user }: DashboardContentProps) {
         <h1 className="text-2xl font-bold mb-2">
           Welcome back, {userName}! 👋
         </h1>
-        <p className=" mb-4">You&apos;re making great progress. Keep it up!</p>
+        <p className="mb-4">You&apos;re making great progress. Keep it up!</p>
         <div className="flex gap-3">
           <Link href="/lessons">
             <Button
@@ -118,9 +164,11 @@ export default function DashboardContent({ user }: DashboardContentProps) {
               Continue Learning
             </Button>
           </Link>
-          <Button className="bg-white/20! text-white! border-white/30! rounded-lg!">
-            View Stats
-          </Button>
+          <Link href="/roadmap">
+            <Button className="bg-white/20! text-white! border-white/30! rounded-lg!">
+              View Roadmap
+            </Button>
+          </Link>
         </div>
       </div>
 
@@ -165,12 +213,12 @@ export default function DashboardContent({ user }: DashboardContentProps) {
             styles={{ body: { padding: 24 } }}
           >
             <h2 className="text-lg font-semibold text-foreground mb-4">
-              Current Roadmap
+              Current Learning Path
             </h2>
             <div className="flex items-center gap-6">
               <Progress
                 type="circle"
-                percent={72}
+                percent={progressPercentage}
                 size={100}
                 strokeColor={{
                   "0%": "#4f46e5",
@@ -187,13 +235,13 @@ export default function DashboardContent({ user }: DashboardContentProps) {
               />
               <div className="flex-1">
                 <h3 className="font-semibold text-foreground mb-2">
-                  Custom Learning Path
+                  {learningPath.title}
                 </h3>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                  <span>📍 Next: Intermediate Skills</span>
+                  <span>📍 Next: {nextModule?.title || "All done!"}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
-                  <span>📅 45 days remaining</span>
+                  <span>📚 {learningPath.difficulty.toUpperCase()}</span>
                 </div>
                 <Link href="/roadmap">
                   <Button
@@ -208,118 +256,83 @@ export default function DashboardContent({ user }: DashboardContentProps) {
             </div>
           </Card>
 
-          {/* Today's Tasks */}
+          {/* Upcoming Lessons */}
           <Card
             className="rounded-xl! border-border!"
             styles={{ body: { padding: 24 } }}
           >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-foreground">
-                Today&apos;s Tasks
+                Upcoming Lessons
               </h2>
               <Tag color="blue">
-                {completedTasks}/{totalTasks} completed
+                {completedLessons}/{totalLessons} completed
               </Tag>
             </div>
             <div className="space-y-3">
-              {todaysTasks.map((task) => (
-                <div
-                  key={task.id}
-                  className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
-                >
-                  <div className="flex items-center gap-3">
-                    {task.status === "in-progress" ? (
-                      <PlayCircleFilled className="text-amber-500 text-lg" />
-                    ) : (
-                      <div className="w-5 h-5 rounded-full border-2 border-gray-300" />
-                    )}
-                    <div>
-                      <p
-                        className={`font-medium ${
-                          task.status === "in-progress"
-                            ? "text-foreground"
-                            : "text-muted-foreground"
-                        }`}
+              {upcomingLessons.length === 0 ? (
+                <Empty description="All lessons completed! 🎉" />
+              ) : (
+                upcomingLessons.map((lesson) => (
+                  <Link key={lesson.id} href={`/lessons?lessonId=${lesson.id}`}>
+                    <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer">
+                      <div className="flex items-center gap-3">
+                        <div className="w-5 h-5 rounded-full border-2 border-gray-300" />
+                        <div>
+                          <p className="font-medium text-foreground">
+                            {lesson.title}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {lesson.moduleName}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="primary"
+                        size="small"
+                        className="rounded-lg! bg-primary!"
                       >
-                        {task.title}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        ⏱ {task.duration}
-                      </p>
+                        Start
+                      </Button>
                     </div>
-                  </div>
-                  {task.status === "pending" && (
-                    <Button
-                      type="primary"
-                      size="small"
-                      className="rounded-lg! bg-primary!"
-                    >
-                      Start
-                    </Button>
-                  )}
-                </div>
-              ))}
+                  </Link>
+                ))
+              )}
             </div>
           </Card>
         </div>
 
         {/* Right Column - 1/3 width */}
         <div className="space-y-6">
-          {/* Weekly Plan */}
+          {/* Module Overview */}
           <Card
             className="rounded-xl! border-border!"
             styles={{ body: { padding: 24 } }}
           >
             <h2 className="text-lg font-semibold text-foreground mb-4">
-              Weekly Plan
+              Modules
             </h2>
             <div className="space-y-3">
-              {weeklyPlan.map((day, index) => (
+              {learningPath.modules.slice(0, 5).map((module, index) => (
                 <div
-                  key={index}
+                  key={module.id}
                   className="flex items-center justify-between text-sm"
                 >
-                  <span className="text-muted-foreground w-10">{day.day}</span>
-                  <div className="flex-1 mx-3">
-                    {day.tasks > 0 && (
-                      <div
-                        className={`h-2 ${day.color} rounded-full`}
-                        style={{ width: `${(day.tasks / 5) * 100}%` }}
-                      />
-                    )}
-                  </div>
-                  <span className="text-muted-foreground">
-                    {day.tasks > 0 ? `${day.tasks}/${day.tasks}` : "-"}
+                  <span
+                    className={
+                      module.isCompleted
+                        ? "text-green-600"
+                        : "text-muted-foreground"
+                    }
+                  >
+                    {index + 1}. {module.title}
                   </span>
+                  {module.isCompleted && (
+                    <span className="text-green-500">✓</span>
+                  )}
                 </div>
               ))}
             </div>
-          </Card>
-
-          {/* Recent Badges */}
-          <Card
-            className="rounded-xl! border-border!"
-            styles={{ body: { padding: 24 } }}
-          >
-            <h2 className="text-lg font-semibold text-foreground mb-4">
-              Recent Badges
-            </h2>
-            <div className="grid grid-cols-2 gap-3">
-              {recentBadges.map((badge, index) => (
-                <div
-                  key={index}
-                  className={`${badge.color} rounded-xl p-4 text-center`}
-                >
-                  <span className="text-2xl">{badge.icon}</span>
-                  <p className="text-xs font-medium text-foreground mt-1">
-                    {badge.name}
-                  </p>
-                </div>
-              ))}
-            </div>
-            <Button block className="mt-4! rounded-lg! border-border!">
-              View All Badges
-            </Button>
           </Card>
 
           {/* Progress Card */}
@@ -329,10 +342,12 @@ export default function DashboardContent({ user }: DashboardContentProps) {
           >
             <div className="text-white">
               <span className="text-3xl">🎉</span>
-              <p className="text-sm opacity-80 mt-2">This Week</p>
-              <p className="text-xl font-bold">+24% Progress</p>
+              <p className="text-sm opacity-80 mt-2">Your Progress</p>
+              <p className="text-xl font-bold">
+                {progressPercentage}% Complete
+              </p>
               <p className="text-sm opacity-80 mt-1">
-                You&apos;re learning faster than 75% of learners! ⚡
+                Keep up the great work! 💪
               </p>
             </div>
           </Card>

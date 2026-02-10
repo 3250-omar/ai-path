@@ -2,6 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const apiKey = process.env.GOOGLE_GENAI_API_KEY as string;
 const genAI = new GoogleGenerativeAI(apiKey);
+export { genAI };
 
 export const model = genAI.getGenerativeModel({
   model: "gemini-3-flash-preview",
