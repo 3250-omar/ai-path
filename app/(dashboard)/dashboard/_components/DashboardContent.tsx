@@ -12,6 +12,7 @@ import {
 import Link from "next/link";
 import { User } from "@supabase/supabase-js";
 import type { LearningPath } from "@/types/learning-path";
+import MarkdownRenderer from "@/app/_components/MarkdownRenderer";
 
 interface DashboardContentProps {
   user: User | null;
@@ -234,11 +235,16 @@ export default function DashboardContent({ user }: DashboardContentProps) {
                 )}
               />
               <div className="flex-1">
-                <h3 className="font-semibold text-foreground mb-2">
-                  {learningPath.title}
-                </h3>
+                <MarkdownRenderer
+                  content={learningPath.title}
+                  className="font-semibold text-foreground mb-2 prose-p:my-0"
+                />
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                  <span>📍 Next: {nextModule?.title || "All done!"}</span>
+                  <span>📍 Next: </span>
+                  <MarkdownRenderer
+                    content={nextModule?.title || "All done!"}
+                    className="prose-p:my-0 inline-block font-medium"
+                  />
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
                   <span>📚 {learningPath.difficulty.toUpperCase()}</span>

@@ -23,6 +23,7 @@ import {
 } from "@ant-design/icons";
 import type { LearningPath } from "@/types/learning-path";
 import PathAILogo from "../../_components/PathAILogo";
+import MarkdownRenderer from "../../_components/MarkdownRenderer";
 
 const { Title, Paragraph, Text } = Typography;
 const { Panel } = Collapse;
@@ -124,9 +125,12 @@ export default function LearningPathPage() {
           <Title level={2} className="!mb-2">
             {learningPath.title}
           </Title>
-          <Paragraph className="text-muted-foreground !mb-4">
-            {learningPath.description}
-          </Paragraph>
+          <div className="!mb-4">
+            <MarkdownRenderer
+              content={learningPath.description}
+              className="text-muted-foreground"
+            />
+          </div>
 
           <div className="flex flex-wrap gap-2 mb-4">
             <Tag color="blue" className="!m-0">
@@ -191,9 +195,10 @@ export default function LearningPathPage() {
                         <Text strong className="text-base">
                           {module.title}
                         </Text>
-                        <div className="text-sm text-muted-foreground">
-                          {module.description}
-                        </div>
+                        <MarkdownRenderer
+                          content={module.description}
+                          className="text-sm text-muted-foreground"
+                        />
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -255,12 +260,12 @@ export default function LearningPathPage() {
                             )}
                           </div>
 
-                          <Paragraph
-                            ellipsis={{ rows: 2 }}
-                            className="text-sm text-muted-foreground !mb-2"
-                          >
-                            {lesson.content.substring(0, 150)}...
-                          </Paragraph>
+                          <div className="!mb-2">
+                            <MarkdownRenderer
+                              content={lesson.content}
+                              className="text-sm line-clamp-3"
+                            />
+                          </div>
 
                           {lesson.learningObjectives.length > 0 && (
                             <div className="mb-2">

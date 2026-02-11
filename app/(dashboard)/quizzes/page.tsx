@@ -9,6 +9,7 @@ import {
 } from "@ant-design/icons";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import MarkdownRenderer from "@/app/_components/MarkdownRenderer";
 import type { Quiz, Lesson } from "@/types/learning-path";
 
 function QuizzesContent() {
@@ -268,9 +269,12 @@ function QuizzesContent() {
         className="rounded-xl! border-border!"
         styles={{ body: { padding: 32 } }}
       >
-        <h2 className="text-lg font-semibold text-foreground mb-6">
-          {currentQuestion?.question}
-        </h2>
+        <div className="mb-6">
+          <MarkdownRenderer
+            content={currentQuestion?.question || ""}
+            className="text-lg font-semibold text-foreground!"
+          />
+        </div>
 
         <Radio.Group
           value={selectedAnswer}
@@ -301,17 +305,20 @@ function QuizzesContent() {
                 >
                   <div className="flex items-center justify-between">
                     <Radio value={index}>
-                      <span
+                      <div
                         className={
                           answered && isCorrect
-                            ? "text-green-700"
+                            ? "text-green-700 font-medium"
                             : answered && isSelected && !isCorrect
-                              ? "text-red-700"
+                              ? "text-red-700 font-medium"
                               : "text-foreground"
                         }
                       >
-                        {option}
-                      </span>
+                        <MarkdownRenderer
+                          content={option}
+                          className="prose-p:my-0"
+                        />
+                      </div>
                     </Radio>
                     {answered && isCorrect && (
                       <CheckCircleFilled className="text-green-500 text-lg" />

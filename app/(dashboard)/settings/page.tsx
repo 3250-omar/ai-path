@@ -23,6 +23,7 @@ import {
 } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import type { LearningPath } from "@/types/learning-path";
+import { signOut } from "@/app/(auth)/actions";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -87,10 +88,8 @@ export default function SettingsPage() {
 
   const handleSignOut = async () => {
     // This should ideally call a signout API or Supabase client
-    // For now, redirect to auth/signout or just home
-    router.push("/auth/signout"); // Assuming this route handles it or similar
+    await signOut();
   };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -220,9 +219,10 @@ export default function SettingsPage() {
 
       <div className="flex justify-center mt-8">
         <Button
-          disabled
+          // disabled
           icon={<LogoutOutlined />}
           className="text-muted-foreground"
+          onClick={handleSignOut}
         >
           Sign Out
         </Button>

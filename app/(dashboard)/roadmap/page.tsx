@@ -10,6 +10,7 @@ import {
 } from "@ant-design/icons";
 import type { LearningPath, Module } from "@/types/learning-path";
 import Link from "next/link";
+import MarkdownRenderer from "@/app/_components/MarkdownRenderer";
 
 export default function RoadmapPage() {
   const [learningPath, setLearningPath] = useState<LearningPath | null>(null);
@@ -205,9 +206,10 @@ export default function RoadmapPage() {
                       <h3 className="text-lg font-semibold text-foreground mb-1">
                         {module.title}
                       </h3>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        {module.description}
-                      </p>
+                      <MarkdownRenderer
+                        content={module.description}
+                        className="text-sm text-muted-foreground mb-2"
+                      />
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <span>⏱ {module.estimatedDurationHours} hours</span>
                         <span>📚 {module.lessons.length} lessons</span>

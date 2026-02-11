@@ -1,6 +1,7 @@
 import React from "react";
 import DashboardSidebar from "./_components/DashboardSidebar";
 import DashboardHeader from "./_components/DashboardHeader";
+import AIChatFloat from "../_components/AIChatFloat";
 import { getUser } from "../(auth)/actions";
 import { redirect } from "next/navigation";
 
@@ -30,6 +31,9 @@ export default async function DashboardLayout({
         {/* Page Content */}
         <main className="p-6">{children}</main>
       </div>
+
+      {/* Floating AI Tutor */}
+      <AIChatFloat />
     </div>
   );
 }

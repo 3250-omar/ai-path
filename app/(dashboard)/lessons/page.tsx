@@ -23,6 +23,7 @@ import {
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import type { LearningPath, Lesson, Module } from "@/types/learning-path";
+import MarkdownRenderer from "../../_components/MarkdownRenderer";
 
 function LessonsContent() {
   const [learningPath, setLearningPath] = useState<LearningPath | null>(null);
@@ -215,11 +216,13 @@ function LessonsContent() {
           </Tag>
         </div>
 
-        {/* Lesson Title */}
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold text-foreground">
-            {currentLesson.title}
-          </h1>
+          <div className="text-3xl font-bold text-foreground">
+            <MarkdownRenderer
+              content={currentLesson.title}
+              className="prose-p:my-0"
+            />
+          </div>
           {currentLesson.isCompleted && (
             <Tag color="success" icon={<CheckCircleFilled />}>
               Completed
@@ -232,93 +235,97 @@ function LessonsContent() {
           className="rounded-xl! border-border!"
           styles={{ body: { padding: 32 } }}
         >
-          <div className="prose max-w-none">
-            {/* Content - rending markdown as text for now, should ideally use a markdown renderer */}
-            <div className="whitespace-pre-wrap text-muted-foreground text-lg leading-relaxed mb-8">
-              {currentLesson.content}
-            </div>
+          {/* Content - rendered using reusable MarkdownRenderer */}
+          <MarkdownRenderer
+            content={currentLesson.content}
+            className="text-lg leading-relaxed mb-8"
+          />
 
-            {/* Learning Objectives */}
-            {currentLesson.learningObjectives &&
-              currentLesson.learningObjectives.length > 0 && (
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-8">
-                  <h3 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
-                    <TrophyOutlined /> Learning Objectives
-                  </h3>
-                  <ul className="space-y-2 text-muted-foreground">
-                    {currentLesson.learningObjectives.map((obj, i) => (
-                      <li key={i} className="flex items-start gap-2">
-                        <CheckCircleFilled className="text-blue-500 mt-1" />
-                        {obj}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-            {/* Resources */}
-            {currentLesson.resources && currentLesson.resources.length > 0 && (
-              <div className="mb-8">
-                <h3 className="text-lg font-semibold text-foreground mb-4">
-                  Resources
+          {/* Learning Objectives */}
+          {currentLesson.learningObjectives &&
+            currentLesson.learningObjectives.length > 0 && (
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-8">
+                <h3 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+                  <TrophyOutlined /> Learning Objectives
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {currentLesson.resources.map((res, i) => (
-                    <a
-                      key={i}
-                      href={res.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block p-4 border border-border rounded-xl hover:bg-slate-50 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
-                          <LinkOutlined />
-                        </div>
-                        <div>
-                          <p className="font-medium text-foreground">
-                            {res.title}
-                          </p>
-                          <p className="text-xs text-muted-foreground capitalize">
-                            {res.type}
-                          </p>
-                        </div>
+                <ul className="space-y-2 text-muted-foreground">
+                  {currentLesson.learningObjectives.map((obj, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <CheckCircleFilled className="text-blue-500 mt-1" />
+                      <div className="flex-1">
+                        <MarkdownRenderer
+                          content={obj}
+                          className="prose-p:my-0"
+                        />
                       </div>
-                    </a>
+                    </li>
                   ))}
-                </div>
+                </ul>
               </div>
             )}
 
-            {/* Completion Action */}
-            <div className="flex flex-col items-center gap-4 mt-8">
-              {!currentLesson.isCompleted && (
+          {/* Resources */}
+          {currentLesson.resources && currentLesson.resources.length > 0 && (
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-foreground mb-4">
+                Resources
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {currentLesson.resources.map((res, i) => (
+                  <a
+                    key={i}
+                    href={res.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block p-4 border border-border rounded-xl hover:bg-slate-50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
+                        <LinkOutlined />
+                      </div>
+                      <div>
+                        <p className="font-medium text-foreground">
+                          {res.title}
+                        </p>
+                        <p className="text-xs text-muted-foreground capitalize">
+                          {res.type}
+                        </p>
+                      </div>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Completion Action */}
+          <div className="flex flex-col items-center gap-4 mt-8">
+            {!currentLesson.isCompleted && (
+              <Button
+                type="primary"
+                size="large"
+                className="h-12! px-8! rounded-xl!"
+                icon={<CheckCircleFilled />}
+                loading={markingComplete}
+                onClick={() => handleMarkComplete(currentLesson!.id)}
+              >
+                Mark as Complete
+              </Button>
+            )}
+
+            {currentLesson.quiz && (
+              <Link href={`/quizzes?lessonId=${currentLesson.id}`}>
                 <Button
-                  type="primary"
                   size="large"
                   className="h-12! px-8! rounded-xl!"
-                  icon={<CheckCircleFilled />}
-                  loading={markingComplete}
-                  onClick={() => handleMarkComplete(currentLesson!.id)}
+                  icon={<TrophyOutlined />}
                 >
-                  Mark as Complete
+                  {currentLesson.quiz.userScore !== undefined
+                    ? `View Quiz Results (${currentLesson.quiz.userScore}%)`
+                    : "Take Lesson Quiz"}
                 </Button>
-              )}
-
-              {currentLesson.quiz && (
-                <Link href={`/quizzes?lessonId=${currentLesson.id}`}>
-                  <Button
-                    size="large"
-                    className="h-12! px-8! rounded-xl!"
-                    icon={<TrophyOutlined />}
-                  >
-                    {currentLesson.quiz.userScore !== undefined
-                      ? `View Quiz Results (${currentLesson.quiz.userScore}%)`
-                      : "Take Lesson Quiz"}
-                  </Button>
-                </Link>
-              )}
-            </div>
+              </Link>
+            )}
           </div>
         </Card>
 

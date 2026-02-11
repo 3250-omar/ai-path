@@ -23,7 +23,17 @@ export async function POST(req: Request) {
         "Format your responses using Markdown.",
     });
 
-    const history = messages.slice(0, -1).map((m: any) => ({
+    // Gemini history must start with a user message
+    // Filter out any leading model messages (like the initial greeting)
+    let historyStartIndex = 0;
+    while (
+      historyStartIndex < messages.length - 1 &&
+      messages[historyStartIndex].role !== "user"
+    ) {
+      historyStartIndex++;
+    }
+
+    const history = messages.slice(historyStartIndex, -1).map((m: any) => ({
       role: m.role === "user" ? "user" : "model",
       parts: [{ text: m.content }],
     }));

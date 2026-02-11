@@ -9,7 +9,6 @@ import {
   BookOutlined,
   FormOutlined,
   LineChartOutlined,
-  MessageOutlined,
   SettingOutlined,
   LogoutOutlined,
   UserOutlined,
@@ -28,7 +27,6 @@ const menuItems = [
   { icon: <BookOutlined />, label: "Lessons", href: "/lessons" },
   { icon: <FormOutlined />, label: "Quizzes", href: "/quizzes" },
   { icon: <LineChartOutlined />, label: "Progress", href: "/progress" },
-  { icon: <MessageOutlined />, label: "AI Chat", href: "/ai-chat" },
   { icon: <SettingOutlined />, label: "Settings", href: "/settings" },
 ];
 
