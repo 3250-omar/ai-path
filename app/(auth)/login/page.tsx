@@ -29,8 +29,6 @@ export default function LoginPage() {
       if (result?.error) {
         message.error(result.error);
       }
-    } catch {
-      message.error("Invalid credentials");
     } finally {
       setLoading(false);
     }
