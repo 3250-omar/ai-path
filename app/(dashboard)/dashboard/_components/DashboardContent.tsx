@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Button, Card, Progress, Tag, Spin, Empty } from "antd";
 import {
   ArrowRightOutlined,
@@ -10,67 +9,28 @@ import {
   ClockCircleOutlined,
 } from "@ant-design/icons";
 import Link from "next/link";
-import { User } from "@supabase/supabase-js";
-import type { LearningPath } from "@/types/learning-path";
+import { useLearningPathStats } from "@/app/hooks/useLearningPathStats";
 import MarkdownRenderer from "@/app/_components/MarkdownRenderer";
+import { useUserStore } from "@/app/stores/useUserStore";
+import { useActiveLearningPath } from "@/app/hooks/useQueries";
 
-interface DashboardContentProps {
-  user: User | null;
-}
-
-export default function DashboardContent({ user }: DashboardContentProps) {
-  const [learningPath, setLearningPath] = useState<LearningPath | null>(null);
-  const [loading, setLoading] = useState(true);
+export default function DashboardContent() {
+  const user = useUserStore((state) => state.user);
+  const { data: learningPath, isLoading: loading } = useActiveLearningPath();
+  const {
+    totalLessons,
+    completedLessons,
+    overallProgress,
+    completedModules,
+    totalModules,
+    upcomingLessons,
+  } = useLearningPathStats(learningPath);
 
   const userName =
     user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Learner";
 
-  useEffect(() => {
-    fetchActiveLearningPath();
-  }, []);
-
-  const fetchActiveLearningPath = async () => {
-    try {
-      const res = await fetch("/api/learning-path/active");
-      const data = await res.json();
-
-      if (data.success && data.path) {
-        setLearningPath(data.path);
-      }
-    } catch (err) {
-      console.error("Failed to fetch active learning path:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Calculate stats from real data
-  const totalLessons =
-    learningPath?.modules.reduce((sum, mod) => sum + mod.lessons.length, 0) ||
-    0;
-  const completedLessons =
-    learningPath?.modules.reduce(
-      (sum, mod) => sum + mod.lessons.filter((l) => l.isCompleted).length,
-      0,
-    ) || 0;
-  const totalModules = learningPath?.modules.length || 0;
-  const completedModules =
-    learningPath?.modules.filter((m) => m.isCompleted).length || 0;
-  const progressPercentage =
-    totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
-
   // Find next incomplete module
   const nextModule = learningPath?.modules.find((mod) => !mod.isCompleted);
-
-  // Get upcoming incomplete lessons as "today's tasks"
-  const upcomingLessons =
-    learningPath?.modules
-      .flatMap((mod) =>
-        mod.lessons
-          .filter((lesson) => !lesson.isCompleted)
-          .map((lesson) => ({ ...lesson, moduleName: mod.title })),
-      )
-      .slice(0, 4) || [];
 
   if (loading) {
     return (
@@ -219,7 +179,7 @@ export default function DashboardContent({ user }: DashboardContentProps) {
             <div className="flex items-center gap-6">
               <Progress
                 type="circle"
-                percent={progressPercentage}
+                percent={overallProgress}
                 size={100}
                 strokeColor={{
                   "0%": "#4f46e5",
@@ -349,9 +309,7 @@ export default function DashboardContent({ user }: DashboardContentProps) {
             <div className="text-white">
               <span className="text-3xl">🎉</span>
               <p className="text-sm opacity-80 mt-2">Your Progress</p>
-              <p className="text-xl font-bold">
-                {progressPercentage}% Complete
-              </p>
+              <p className="text-xl font-bold">{overallProgress}% Complete</p>
               <p className="text-sm opacity-80 mt-1">
                 Keep up the great work! 💪
               </p>

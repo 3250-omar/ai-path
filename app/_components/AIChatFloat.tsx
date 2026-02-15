@@ -1,19 +1,20 @@
 "use client";
 
 import { useState, useRef, useEffect, Suspense } from "react";
-import { Input, Button, Card, Spin, message, Badge } from "antd";
+import { Input, Button, Card, message, Badge } from "antd";
 import {
   SendOutlined,
   RobotOutlined,
   LoadingOutlined,
   CloseOutlined,
   MinusOutlined,
-  AimOutlined,
   StarFilled,
 } from "@ant-design/icons";
 import { useSearchParams } from "next/navigation";
 import MarkdownRenderer from "./MarkdownRenderer";
 import type { Lesson } from "@/types/learning-path";
+import { useActiveLearningPath } from "../hooks/useQueries";
+import { useChat } from "../hooks/useMutations";
 
 interface Message {
   id: number;
@@ -25,6 +26,9 @@ interface Message {
 function AIChatFloatContent() {
   const searchParams = useSearchParams();
   const lessonId = searchParams.get("lessonId");
+
+  const { data: learningPath } = useActiveLearningPath();
+  const chatMutation = useChat();
 
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
@@ -54,51 +58,42 @@ function AIChatFloatContent() {
     }
   }, [messages, isOpen]);
 
+  // Update context when learning path or lessonId changes
   useEffect(() => {
-    if (lessonId) {
-      fetchLessonContext();
+    if (learningPath && lessonId) {
+      let foundLesson: Lesson | undefined;
+      for (const mod of learningPath.modules) {
+        foundLesson = mod.lessons.find((l) => l.id === lessonId);
+        if (foundLesson) break;
+      }
+
+      if (foundLesson) {
+        const context = `Lesson: ${foundLesson.title}\n\nContent: ${foundLesson.content}\n\nLearning Objectives: ${foundLesson.learningObjectives?.join(", ")}`;
+        setLessonContext(context);
+
+        // Only add context message if not already added
+        const contextMsg = `I see you're working on "${foundLesson.title}". How can I help?`;
+        if (!messages.some((m) => m.content === contextMsg)) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: Date.now(),
+              role: "assistant",
+              content: contextMsg,
+              time: new Date().toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+            },
+          ]);
+        }
+      }
     } else {
       setLessonContext("");
     }
+    // We only want to run this when lessonId changes or learningPath loads initially
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lessonId]);
-
-  const fetchLessonContext = async () => {
-    try {
-      const res = await fetch("/api/learning-path/active");
-      const data = await res.json();
-
-      if (data.success && data.path && lessonId) {
-        for (const mod of data.path.modules) {
-          const lesson = mod.lessons.find((l: Lesson) => l.id === lessonId);
-          if (lesson) {
-            const context = `Lesson: ${lesson.title}\n\nContent: ${lesson.content}\n\nLearning Objectives: ${lesson.learningObjectives?.join(", ")}`;
-            setLessonContext(context);
-
-            // Only add context message if not already added to avoid duplicates on navigation
-            const contextMsg = `I see you're working on "${lesson.title}". How can I help?`;
-            if (!messages.some((m) => m.content === contextMsg)) {
-              setMessages((prev) => [
-                ...prev,
-                {
-                  id: Date.now(),
-                  role: "assistant",
-                  content: contextMsg,
-                  time: new Date().toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  }),
-                },
-              ]);
-            }
-            break;
-          }
-        }
-      }
-    } catch (error) {
-      console.error("Failed to fetch lesson context:", error);
-    }
-  };
+  }, [lessonId, learningPath]); // learningPath is stable from query
 
   const sendMessage = async (text: string) => {
     if (!text.trim()) return;
@@ -118,33 +113,54 @@ function AIChatFloatContent() {
     setIsTyping(true);
 
     try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: [...messages, userMessage].map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
-          context: lessonContext,
-        }),
+      const response = await chatMutation.mutateAsync({
+        messages: [...messages, userMessage].map((m) => ({
+          role: m.role,
+          content: m.content,
+        })),
+        context: lessonContext,
       });
 
-      const data = await response.json();
+      if (!response.body) {
+        throw new Error("Failed to get response");
+      }
 
-      if (data.error) throw new Error(data.error);
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let done = false;
+      let aiMessageId: number | null = null;
 
-      const aiMessage: Message = {
-        id: Date.now() + 1,
-        role: "assistant",
-        content: data.content,
-        time: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      };
+      while (!done) {
+        const { value, done: doneReading } = await reader.read();
+        done = doneReading;
+        if (value) {
+          const chunkValue = decoder.decode(value, { stream: true });
 
-      setMessages((prev) => [...prev, aiMessage]);
+          if (aiMessageId === null) {
+            // First chunk: Create the message
+            aiMessageId = Date.now() + 1;
+            const aiMessage: Message = {
+              id: aiMessageId,
+              role: "assistant",
+              content: chunkValue,
+              time: new Date().toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+            };
+            setMessages((prev) => [...prev, aiMessage]);
+          } else {
+            // Subsequent chunks: Update existing message
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === aiMessageId
+                  ? { ...msg, content: msg.content + chunkValue }
+                  : msg,
+              ),
+            );
+          }
+        }
+      }
     } catch (error) {
       console.error("Chat error:", error);
       message.error("Failed to get response");
@@ -241,14 +257,10 @@ function AIChatFloatContent() {
                 </div>
               </div>
             ))}
-            {isTyping && (
+            {isTyping && messages[messages.length - 1]?.role === "user" && (
               <div className="flex justify-start">
                 <div className="bg-white border border-border rounded-2xl rounded-bl-none p-3 shadow-xs">
-                  <Spin
-                    indicator={
-                      <LoadingOutlined style={{ fontSize: 18 }} spin />
-                    }
-                  />
+                  <LoadingOutlined className="text-primary text-xl" spin />
                 </div>
               </div>
             )}

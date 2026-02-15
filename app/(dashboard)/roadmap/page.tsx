@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Button, Card, Progress, Tag, Spin, Empty } from "antd";
 import {
   CheckCircleFilled,
@@ -8,70 +7,22 @@ import {
   LockOutlined,
   ArrowRightOutlined,
 } from "@ant-design/icons";
-import type { LearningPath, Module } from "@/types/learning-path";
+import type { LearningPath } from "@/types/learning-path";
 import Link from "next/link";
 import MarkdownRenderer from "@/app/_components/MarkdownRenderer";
+import { useActiveLearningPath } from "@/app/hooks/useQueries";
+import { useLearningPathStats } from "@/app/hooks/useLearningPathStats";
 
 export default function RoadmapPage() {
-  const [learningPath, setLearningPath] = useState<LearningPath | null>(null);
-  const [loading, setLoading] = useState(true);
-  // const router = useRouter(); // Removed unused router
-
-  useEffect(() => {
-    fetchActiveLearningPath();
-  }, []);
-
-  const fetchActiveLearningPath = async () => {
-    try {
-      const res = await fetch("/api/learning-path/active");
-      const data = await res.json();
-
-      if (data.success && data.path) {
-        setLearningPath(data.path);
-      }
-    } catch (err) {
-      console.error("Failed to fetch active learning path:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const calculateOverallProgress = () => {
-    if (!learningPath) return 0;
-    const totalLessons = learningPath.modules.reduce(
-      (sum, mod) => sum + mod.lessons.length,
-      0,
-    );
-    const completedLessons = learningPath.modules.reduce(
-      (sum, mod) => sum + mod.lessons.filter((l) => l.isCompleted).length,
-      0,
-    );
-    return totalLessons > 0
-      ? Math.round((completedLessons / totalLessons) * 100)
-      : 0;
-  };
-
-  const getModuleStatus = (module: Module, moduleIndex: number) => {
-    const allCompleted = module.lessons.every((l) => l.isCompleted);
-    const someCompleted = module.lessons.some((l) => l.isCompleted);
-
-    if (allCompleted) return "completed";
-    if (someCompleted) return "in-progress";
-
-    // Check if previous module is complete
-    if (moduleIndex === 0) return "in-progress";
-    const previousModule = learningPath?.modules[moduleIndex - 1];
-    const previousComplete = previousModule?.lessons.every(
-      (l) => l.isCompleted,
-    );
-
-    return previousComplete ? "in-progress" : "locked";
-  };
-
-  const getFirstIncompleteLessonId = (module: Module) => {
-    const incompleteLesson = module.lessons.find((l) => !l.isCompleted);
-    return incompleteLesson?.id;
-  };
+  const { data: learningPath, isLoading: loading } = useActiveLearningPath();
+  const {
+    overallProgress,
+    completedModules,
+    totalModules,
+    getModuleStatus,
+    getFirstIncompleteLessonId,
+    calculateModuleProgress,
+  } = useLearningPathStats(learningPath);
 
   if (loading) {
     return (
@@ -103,12 +54,6 @@ export default function RoadmapPage() {
       </div>
     );
   }
-
-  const overallProgress = calculateOverallProgress();
-  const completedModules = learningPath.modules.filter((m) =>
-    m.lessons.every((l) => l.isCompleted),
-  ).length;
-  const totalModules = learningPath.modules.length;
 
   return (
     <div className="space-y-6">
@@ -157,14 +102,9 @@ export default function RoadmapPage() {
       </Card>
 
       {/* Modules Timeline */}
-      <div className="space-y-4">
+      <div className=" flex flex-col gap-4">
         {learningPath.modules.map((module, index) => {
-          const completedLessons = module.lessons.filter(
-            (l) => l.isCompleted,
-          ).length;
-          const totalLessons = module.lessons.length;
-          const moduleProgress =
-            totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0;
+          const moduleProgress = calculateModuleProgress(module);
           const status = getModuleStatus(module, index);
           const firstIncompleteLessonId = getFirstIncompleteLessonId(module);
 

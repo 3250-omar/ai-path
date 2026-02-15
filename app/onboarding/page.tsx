@@ -5,6 +5,7 @@ import { Button, Input, Tag, message } from "antd";
 import { ArrowRightOutlined, BulbOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import PathAILogo from "../_components/PathAILogo";
+import { useUserStore } from "@/app/stores/useUserStore";
 
 const { TextArea } = Input;
 
@@ -18,11 +19,11 @@ const suggestions = [
 
 export default function OnboardingPage() {
   const [learningGoal, setLearningGoal] = useState("");
-  const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const user = useUserStore((state) => state.user);
 
-  // Mock username - will come from auth later
-  const userName = "omarMostafa";
+  const userName =
+    user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Learner";
 
   const handleSubmit = async () => {
     if (!learningGoal.trim()) {
@@ -30,39 +31,11 @@ export default function OnboardingPage() {
       return;
     }
 
-    setLoading(true);
-    try {
-      const res = await fetch("/api/generate-path", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ goal: learningGoal }),
-      });
+    // Store learning goal only
+    sessionStorage.setItem("learningGoal", learningGoal);
 
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || "Failed to generate learning path");
-      }
-
-      // Store path ID and title for the generating page
-      sessionStorage.setItem("pathId", data.pathId);
-      sessionStorage.setItem("pathTitle", data.title);
-      sessionStorage.setItem("learningGoal", learningGoal);
-
-      // Navigate to generating page
-      router.push("/onboarding/generating");
-    } catch (err) {
-      console.error("Generation error:", err);
-      message.error(
-        err instanceof Error
-          ? err.message
-          : "Failed to generate your learning path. Please try again.",
-      );
-    } finally {
-      setLoading(false);
-    }
+    // Navigate to generating page immediately
+    router.push("/onboarding/generating");
   };
   const handleSuggestionClick = (suggestion: string) => {
     setLearningGoal(suggestion);
@@ -106,7 +79,7 @@ export default function OnboardingPage() {
             placeholder="Example: I want to become a Full Stack Web Developer and learn React, Node.js, and databases..."
             className="!rounded-xl !bg-blue-50/50 !border-blue-100 !min-h-[140px] !text-base !p-4"
             autoSize={{ minRows: 5, maxRows: 8 }}
-            disabled={loading}
+            // disabled={generatePath.isPending} // Removed
           />
         </div>
 
@@ -133,7 +106,7 @@ export default function OnboardingPage() {
           type="primary"
           size="large"
           block
-          loading={loading}
+          // loading={generatePath.isPending} // Removed as we redirect immediately
           onClick={handleSubmit}
           className="!h-14 !rounded-xl !text-base !font-medium !bg-gradient-to-r !from-primary !to-secondary !border-0"
           icon={<span className="mr-1">✨</span>}

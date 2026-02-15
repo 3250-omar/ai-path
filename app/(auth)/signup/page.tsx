@@ -32,8 +32,8 @@ export default function SignupPage() {
 
       const result = await signUp(formData);
       message.success(result.message);
-    } catch {
-      message.error("Failed to create account");
+    } catch (error) {
+      console.error("Error creating account:", error);
     } finally {
       setLoading(false);
     }

@@ -28,57 +28,26 @@ import MarkdownRenderer from "../../_components/MarkdownRenderer";
 const { Title, Paragraph, Text } = Typography;
 const { Panel } = Collapse;
 
+import { useLearningPath } from "@/app/hooks/useQueries";
+import { useLearningPathStats } from "@/app/hooks/useLearningPathStats";
+
 export default function LearningPathPage() {
   const params = useParams();
   const router = useRouter();
   const pathId = params?.id as string;
 
-  const [learningPath, setLearningPath] = useState<LearningPath | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
   useEffect(() => {
     if (!pathId) {
       router.push("/onboarding");
-      return;
     }
-
-    // Fetch learning path data
-    fetchLearningPath();
   }, [pathId, router]);
 
-  const fetchLearningPath = async () => {
-    try {
-      const res = await fetch(`/api/learning-path/${pathId}`);
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || "Failed to load learning path");
-      }
-
-      setLearningPath(data.path);
-    } catch (err) {
-      console.error("Error fetching learning path:", err);
-      setError(
-        err instanceof Error ? err.message : "Failed to load learning path",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const calculateProgress = () => {
-    if (!learningPath) return 0;
-    const totalLessons = learningPath.modules.reduce(
-      (sum, mod) => sum + mod.lessons.length,
-      0,
-    );
-    const completedLessons = learningPath.modules.reduce(
-      (sum, mod) => sum + mod.lessons.filter((l) => l.isCompleted).length,
-      0,
-    );
-    return totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0;
-  };
+  const {
+    data: learningPath,
+    isLoading: loading,
+    error,
+  } = useLearningPath(pathId);
+  const { overallProgress: progress } = useLearningPathStats(learningPath);
 
   if (loading) {
     return (
@@ -93,7 +62,9 @@ export default function LearningPathPage() {
       <div className="min-h-screen bg-slate-50/30 flex items-center justify-center p-4">
         <Card className="max-w-md w-full text-center">
           <Empty
-            description={error || "Learning path not found"}
+            description={
+              error instanceof Error ? error.message : "Learning path not found"
+            }
             image={Empty.PRESENTED_IMAGE_SIMPLE}
           >
             <Button type="primary" onClick={() => router.push("/onboarding")}>
@@ -105,7 +76,7 @@ export default function LearningPathPage() {
     );
   }
 
-  const progress = calculateProgress();
+  // const progress = calculateProgress(); // Removed as we use the one from the hook
 
   return (
     <div className="min-h-screen bg-slate-50/30">
@@ -173,12 +144,15 @@ export default function LearningPathPage() {
               (l) => l.isCompleted,
             ).length;
             const totalLessons = module.lessons.length;
+            // You could use calculateModuleProgress here too if you expose it, but simple calc is fine for now or use the hook again inside?
+            // Actually useLearningPathStats returns calculateModuleProgress.
+            // Let's grab it from the hook at the top level.
             const moduleProgress =
               totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0;
 
             return (
               <Panel
-                key={moduleIndex}
+                key={module.id}
                 header={
                   <div className="flex items-center justify-between w-full pr-4">
                     <div className="flex items-center gap-3">

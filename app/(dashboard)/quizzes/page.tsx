@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useState, Suspense, useMemo } from "react";
 import { Button, Card, Radio, Progress, message, Spin, Empty } from "antd";
 import {
   CheckCircleFilled,
@@ -10,61 +10,34 @@ import {
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import MarkdownRenderer from "@/app/_components/MarkdownRenderer";
-import type { Quiz, Lesson } from "@/types/learning-path";
+import type { Quiz } from "@/types/learning-path";
+import { useActiveLearningPath } from "@/app/hooks/useQueries";
+import { useSubmitQuiz } from "@/app/hooks/useMutations";
 
 function QuizzesContent() {
   const searchParams = useSearchParams();
   const lessonId = searchParams.get("lessonId");
 
-  const [loading, setLoading] = useState(true);
-  const [quiz, setQuiz] = useState<Quiz | null>(null);
-  const [lessonTitle, setLessonTitle] = useState<string>("");
+  const { data: learningPath, isLoading: loading } = useActiveLearningPath();
+  const submitQuiz = useSubmitQuiz();
+
+  const { quiz, lessonTitle } = useMemo(() => {
+    if (!learningPath || !lessonId) return { quiz: null, lessonTitle: "" };
+
+    for (const mod of learningPath.modules) {
+      const lesson = mod.lessons.find((l) => l.id === lessonId);
+      if (lesson) {
+        return { quiz: lesson.quiz || null, lessonTitle: lesson.title };
+      }
+    }
+    return { quiz: null, lessonTitle: "" };
+  }, [learningPath, lessonId]);
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    const fetchActiveLearningPath = async () => {
-      try {
-        setLoading(true);
-        const res = await fetch("/api/learning-path/active");
-        const data = await res.json();
-
-        if (data.success && data.path && lessonId) {
-          // Find quiz for this lesson
-          let foundQuiz: Quiz | null = null;
-          let foundTitle = "";
-
-          for (const mod of data.path.modules) {
-            const lesson = mod.lessons.find((l: Lesson) => l.id === lessonId);
-            if (lesson) {
-              foundTitle = lesson.title;
-              if (lesson.quiz) {
-                foundQuiz = lesson.quiz;
-              }
-              break;
-            }
-          }
-
-          if (foundQuiz) {
-            setQuiz(foundQuiz);
-            setLessonTitle(foundTitle);
-          }
-        }
-      } catch (err) {
-        console.error("Failed to fetch active learning path:", err);
-        message.error("Failed to load quiz");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchActiveLearningPath();
-  }, [lessonId]);
 
   const currentQuestion = quiz?.questions[currentQuestionIndex];
 
@@ -104,24 +77,14 @@ function QuizzesContent() {
 
     // Submit result to API
     try {
-      setSubmitting(true);
-      const res = await fetch(`/api/quizzes/${quiz.id}/submit`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ score: finalScore }),
+      await submitQuiz.mutateAsync({
+        quizId: quiz.id,
+        answers: { score: finalScore.toString() },
       });
-
-      const data = await res.json();
-      if (!data.success) {
-        console.error("Failed to save score:", data.error);
-        message.warning("Failed to save score");
-      } else {
-        message.success("Quiz completed!");
-      }
+      message.success("Quiz completed!");
     } catch (err) {
       console.error("Error submitting quiz:", err);
-    } finally {
-      setSubmitting(false);
+      message.warning("Failed to save score");
     }
   };
 
@@ -340,7 +303,7 @@ function QuizzesContent() {
           block
           onClick={answered ? handleNext : handleSubmitAnswer}
           disabled={selectedAnswer === null && !answered}
-          loading={submitting}
+          loading={submitQuiz.isPending}
           className="mt-8! h-12! rounded-xl! bg-linear-to-r! from-primary! to-secondary! border-0!"
         >
           {answered

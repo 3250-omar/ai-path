@@ -33,10 +33,12 @@ export async function POST(req: Request) {
       historyStartIndex++;
     }
 
-    const history = messages.slice(historyStartIndex, -1).map((m: any) => ({
-      role: m.role === "user" ? "user" : "model",
-      parts: [{ text: m.content }],
-    }));
+    const history = messages
+      .slice(historyStartIndex, -1)
+      .map((m: { role: string; content: string }) => ({
+        role: m.role === "user" ? "user" : "model",
+        parts: [{ text: m.content }],
+      }));
 
     const chat = model.startChat({
       history: history,
@@ -49,14 +51,26 @@ export async function POST(req: Request) {
       prompt = `Context (Current Lesson Content):\n${context}\n\nUser Question:\n${prompt}`;
     }
 
-    const result = await chat.sendMessage(prompt);
-    const response = await result.response;
-    const text = response.text();
+    const result = await chat.sendMessageStream(prompt);
 
-    return NextResponse.json({
-      role: "assistant",
-      content: text,
+    const stream = new ReadableStream({
+      async start(controller) {
+        const encoder = new TextEncoder();
+        try {
+          for await (const chunk of result.stream) {
+            const chunkText = chunk.text();
+            if (chunkText) {
+              controller.enqueue(encoder.encode(chunkText));
+            }
+          }
+          controller.close();
+        } catch (err) {
+          controller.error(err);
+        }
+      },
     });
+
+    return new NextResponse(stream);
   } catch (error) {
     console.error("Error in chat API:", error);
     return NextResponse.json(

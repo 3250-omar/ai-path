@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { Suspense } from "react";
 import {
   Button,
   Card,
@@ -22,57 +22,32 @@ import {
 } from "@ant-design/icons";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import type { LearningPath, Lesson, Module } from "@/types/learning-path";
+import type { Lesson, Module } from "@/types/learning-path";
 import MarkdownRenderer from "../../_components/MarkdownRenderer";
+import { useActiveLearningPath } from "@/app/hooks/useQueries";
+import { useCompleteLesson } from "@/app/hooks/useMutations";
+import { useLearningPathStats } from "@/app/hooks/useLearningPathStats";
 
 function LessonsContent() {
-  const [learningPath, setLearningPath] = useState<LearningPath | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [markingComplete, setMarkingComplete] = useState(false);
+  const { data: learningPath, isLoading: loading } = useActiveLearningPath();
+  const completeLesson = useCompleteLesson();
+  const { calculateModuleProgress } = useLearningPathStats(learningPath);
   const searchParams = useSearchParams();
   const router = useRouter();
 
   const lessonId = searchParams.get("lessonId");
 
-  useEffect(() => {
-    fetchActiveLearningPath();
-  }, []);
-
-  const fetchActiveLearningPath = async () => {
-    try {
-      const res = await fetch("/api/learning-path/active");
-      const data = await res.json();
-
-      if (data.success && data.path) {
-        setLearningPath(data.path);
-      }
-    } catch (err) {
-      console.error("Failed to fetch active learning path:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleMarkComplete = async (id: string) => {
-    setMarkingComplete(true);
     try {
-      const res = await fetch(`/api/lessons/${id}/complete`, {
-        method: "POST",
-      });
-      const data = await res.json();
-
-      if (data.success) {
-        message.success("Lesson marked as complete!");
-        // Refresh data
-        fetchActiveLearningPath();
-      } else {
-        message.error(data.error || "Failed to mark lesson as complete");
-      }
+      await completeLesson.mutateAsync(id);
+      message.success("Lesson marked as complete!");
     } catch (err) {
       console.error("Error marking lesson complete:", err);
-      message.error("Failed to mark lesson as complete");
-    } finally {
-      setMarkingComplete(false);
+      message.error(
+        err instanceof Error
+          ? err.message
+          : "Failed to mark lesson as complete",
+      );
     }
   };
 
@@ -190,12 +165,7 @@ function LessonsContent() {
   }
 
   // Module Stats
-  const completedInModule = currentModule.lessons.filter(
-    (l) => l.isCompleted,
-  ).length;
-  const totalInModule = currentModule.lessons.length;
-  const moduleProgress =
-    totalInModule > 0 ? (completedInModule / totalInModule) * 100 : 0;
+  const moduleProgress = calculateModuleProgress(currentModule);
 
   return (
     <div className="flex gap-6">
@@ -306,7 +276,7 @@ function LessonsContent() {
                 size="large"
                 className="h-12! px-8! rounded-xl!"
                 icon={<CheckCircleFilled />}
-                loading={markingComplete}
+                loading={completeLesson.isPending}
                 onClick={() => handleMarkComplete(currentLesson!.id)}
               >
                 Mark as Complete

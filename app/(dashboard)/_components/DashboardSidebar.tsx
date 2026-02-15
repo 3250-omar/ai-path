@@ -15,11 +15,7 @@ import {
 } from "@ant-design/icons";
 import PathAILogo from "../../_components/PathAILogo";
 import { signOut } from "../../(auth)/actions";
-import { User } from "@supabase/supabase-js";
-
-interface DashboardSidebarProps {
-  user: User | null;
-}
+import { useUserStore } from "@/app/stores/useUserStore";
 
 const menuItems = [
   { icon: <HomeOutlined />, label: "Dashboard", href: "/dashboard" },
@@ -30,8 +26,9 @@ const menuItems = [
   { icon: <SettingOutlined />, label: "Settings", href: "/settings" },
 ];
 
-export default function DashboardSidebar({ user }: DashboardSidebarProps) {
+export default function DashboardSidebar() {
   const pathname = usePathname();
+  const user = useUserStore((state) => state.user);
 
   const handleSignOut = async () => {
     await signOut();

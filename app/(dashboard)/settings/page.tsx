@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import {
   Button,
   Card,
@@ -19,78 +18,36 @@ import {
   DeleteOutlined,
   LogoutOutlined,
   BookOutlined,
-  SafetyCertificateOutlined,
 } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
-import type { LearningPath } from "@/types/learning-path";
 import { signOut } from "@/app/(auth)/actions";
+import { useUser, useActiveLearningPath } from "@/app/hooks/useQueries";
+import { useDeleteActivePath } from "@/app/hooks/useMutations";
 
 export default function SettingsPage() {
   const router = useRouter();
-  const [user, setUser] = useState<{ email: string } | null>(null);
-  const [learningPath, setLearningPath] = useState<LearningPath | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [deleting, setDeleting] = useState(false);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const { data: user, isLoading: userLoading } = useUser();
+  const { data: learningPath, isLoading: pathLoading } =
+    useActiveLearningPath();
+  const deletePath = useDeleteActivePath();
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-
-      // Fetch user
-      const userRes = await fetch("/api/user");
-      const userData = await userRes.json();
-      if (userData.user) {
-        setUser(userData.user);
-      }
-
-      // Fetch active path
-      const pathRes = await fetch("/api/learning-path/active");
-      const pathData = await pathRes.json();
-      if (pathData.success && pathData.path) {
-        setLearningPath(pathData.path);
-      }
-    } catch (error) {
-      console.error("Failed to fetch settings data:", error);
-      message.error("Failed to load settings");
-    } finally {
-      setLoading(false);
-    }
+  const handleSignOut = async () => {
+    await signOut();
   };
 
   const handleDeletePath = async () => {
     try {
-      setDeleting(true);
-      const res = await fetch("/api/learning-path/active", {
-        method: "DELETE",
-      });
-      const data = await res.json();
-
-      if (data.success) {
-        message.success("Learning path deleted successfully");
-        setLearningPath(null);
-        router.refresh(); // Refresh to update sidebar if needed
-        // Redirect to onboarding or dashboard
-        router.push("/onboarding");
-      } else {
-        message.error(data.error || "Failed to delete learning path");
-      }
-    } catch (error) {
-      console.error("Delete error:", error);
-      message.error("An error occurred");
-    } finally {
-      setDeleting(false);
+      await deletePath.mutateAsync();
+      message.success("Learning path deleted successfully");
+      router.push("/onboarding");
+    } catch (err) {
+      console.error("Delete error:", err);
+      message.error("Failed to delete learning path");
     }
   };
 
-  const handleSignOut = async () => {
-    // This should ideally call a signout API or Supabase client
-    await signOut();
-  };
-  if (loading) {
+  if (userLoading || pathLoading) {
     return (
       <div className="flex items-center justify-center h-96">
         <Spin size="large" />
@@ -168,7 +125,7 @@ export default function SettingsPage() {
                 onConfirm={handleDeletePath}
                 okText="Yes, Delete"
                 cancelText="Cancel"
-                okButtonProps={{ danger: true, loading: deleting }}
+                okButtonProps={{ danger: true, loading: deletePath.isPending }}
               >
                 <Button
                   danger
@@ -219,7 +176,6 @@ export default function SettingsPage() {
 
       <div className="flex justify-center mt-8">
         <Button
-          // disabled
           icon={<LogoutOutlined />}
           className="text-muted-foreground"
           onClick={handleSignOut}

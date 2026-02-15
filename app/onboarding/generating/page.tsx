@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Progress, Spin } from "antd";
 import {
   CheckCircleFilled,
@@ -9,6 +9,8 @@ import {
 } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import PathAILogo from "../../_components/PathAILogo";
+import { useGeneratePath } from "@/app/hooks/useMutations";
+import { message } from "antd";
 
 // Generation steps
 const generationSteps = [
@@ -23,58 +25,75 @@ export default function GeneratingPage() {
   const [progress, setProgress] = useState(0);
   const router = useRouter();
 
-  useEffect(() => {
-    const pathId = sessionStorage.getItem("pathId");
+  const generatePath = useGeneratePath();
+  const hasStarted = useRef(false);
 
-    if (!pathId) {
-      // No path ID, redirect back to onboarding
+  useEffect(() => {
+    const learningGoal = sessionStorage.getItem("learningGoal");
+
+    if (!learningGoal) {
+      // No goal, redirect back to onboarding
       router.push("/onboarding");
       return;
     }
 
-    let stepIndex = 0;
-    let progressValue = 0;
+    if (hasStarted.current) return;
+    hasStarted.current = true;
 
-    const runStep = () => {
-      if (stepIndex >= generationSteps.length) {
-        // All steps complete, redirect to dashboard
+    // Call the mutation
+    generatePath.mutate(learningGoal, {
+      onSuccess: (data) => {
+        // Store path ID and title
+        sessionStorage.setItem("pathId", data.pathId);
+        sessionStorage.setItem("pathTitle", data.title);
+
+        // Complete progress animation immediately
+        setProgress(100);
+        setCurrentStep(generationSteps.length);
+
         setTimeout(() => {
-          // Clear session storage
+          // Clear session storage mostly
+          sessionStorage.removeItem("learningGoal");
+          // Keep pathId/Title for dashboard welcome maybe? Or clear them.
+          // The original code cleared them.
           sessionStorage.removeItem("pathId");
           sessionStorage.removeItem("pathTitle");
-          sessionStorage.removeItem("learningGoal");
 
-          // Redirect to dashboard
           router.push("/dashboard");
-        }, 500);
-        return;
-      }
+        }, 800);
+      },
+      onError: (error) => {
+        console.error("Generation error:", error);
+        message.error("Failed to generate path. Please try again.");
+        setTimeout(() => {
+          router.push("/onboarding");
+        }, 2000);
+      },
+    });
 
-      setCurrentStep(stepIndex);
+    // Mock progress animation that slows down as it approaches 90%
+    let progressValue = 0;
+    const interval = setInterval(() => {
+      if (progressValue < 90) {
+        // Logarithmic slowdown or just simple increments that get smaller?
+        // Let's just do linear for now but cap at 90
+        // The original code had steps. Let's try to map progress to steps roughly.
+        // Step 1: 0-25%, Step 2: 25-50%, etc.
+        progressValue += 0.5; // slow increment
+        setProgress(progressValue);
 
-      // Animate progress during this step
-      const stepDuration = generationSteps[stepIndex].duration;
-      const progressIncrement = 100 / generationSteps.length;
-      const startProgress = progressValue;
-      const endProgress = startProgress + progressIncrement;
-      const intervalDuration = 50;
-      const steps = stepDuration / intervalDuration;
-      const incrementPerStep = progressIncrement / steps;
-
-      const progressInterval = setInterval(() => {
-        progressValue += incrementPerStep;
-        if (progressValue >= endProgress) {
-          progressValue = endProgress;
-          clearInterval(progressInterval);
-          stepIndex++;
-          setTimeout(runStep, 300);
+        // Update current step based on progress
+        const stepIndex = Math.floor(
+          (progressValue / 100) * generationSteps.length,
+        );
+        if (stepIndex < generationSteps.length) {
+          setCurrentStep(stepIndex);
         }
-        setProgress(Math.min(progressValue, 100));
-      }, intervalDuration);
-    };
+      }
+    }, 100);
 
-    // Start after a short delay
-    setTimeout(runStep, 500);
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
   return (
