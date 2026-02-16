@@ -12,20 +12,23 @@ export default function Navbar() {
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-border">
-      <nav className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-slate-950/50 backdrop-blur-xl border-b border-white/5">
+      <nav className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center">
-          <PathAILogo size={36} />
+        <Link
+          href="/"
+          className="flex items-center hover:opacity-80 transition-opacity"
+        >
+          <PathAILogo size={40} />
         </Link>
 
         {/* Nav Links - Desktop */}
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex items-center gap-10">
           {navLinks.map((link) => (
             <a
               key={link.label}
               href={link.href}
-              className="text-muted-foreground hover:text-foreground transition-colors font-medium"
+              className="text-slate-400 hover:text-white transition-all font-medium text-sm tracking-wide"
             >
               {link.label}
             </a>
@@ -33,19 +36,16 @@ export default function Navbar() {
         </div>
 
         {/* Auth Buttons */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-6">
           <Link href="/login">
-            <Button type="text" className="font-medium">
+            <button className="text-slate-300 hover:text-white transition-colors font-medium text-sm">
               Login
-            </Button>
+            </button>
           </Link>
           <Link href="/signup">
-            <Button
-              type="primary"
-              className="rounded-full! bg-primary! px-5! font-medium!"
-            >
+            <button className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2.5 rounded-full font-bold text-sm transition-all shadow-lg shadow-indigo-500/20 active:scale-95">
               Get Started
-            </Button>
+            </button>
           </Link>
         </div>
       </nav>

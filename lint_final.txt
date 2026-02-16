@@ -1,0 +1,50 @@
+
+> my-app@0.1.0 lint
+> eslint
+
+
+D:\omar\portfolio\ai-path\my-app\app\(dashboard)\quizzes\page.tsx
+  22:33  error  Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. This value was memoized in source but not in compilation output.
+
+D:\omar\portfolio\ai-path\my-app\app\(dashboard)\quizzes\page.tsx:22:33
+  20 |   const submitQuiz = useSubmitQuiz();
+  21 |
+> 22 |   const { quiz, lessonTitle } = useMemo(() => {
+     |                                 ^^^^^^^^^^^^^^^
+> 23 |     if (!learningPath || !lessonId) return { quiz: null, lessonTitle: "" };
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 24 |
+     …
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 31 |     return { quiz: null, lessonTitle: "" };
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 32 |   }, [learningPath, lessonId]);
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Could not preserve existing memoization
+  33 |
+  34 |   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  35 |   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);  react-hooks/preserve-manual-memoization
+
+D:\omar\portfolio\ai-path\my-app\app\(dashboard)\roadmap\page.tsx
+  10:15  warning  'LearningPath' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\omar\portfolio\ai-path\my-app\app\_components\MarkdownRenderer.tsx
+  46:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\omar\portfolio\ai-path\my-app\app\_components\Navbar.tsx
+  4:10  warning  'Button' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\omar\portfolio\ai-path\my-app\app\learning-path\[id]\page.tsx
+   3:21  warning  'useState' is defined but never used            @typescript-eslint/no-unused-vars
+  14:3   warning  'message' is defined but never used             @typescript-eslint/no-unused-vars
+  24:15  warning  'LearningPath' is defined but never used        @typescript-eslint/no-unused-vars
+  28:16  warning  'Paragraph' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\omar\portfolio\ai-path\my-app\utils\supabase\middleware.ts
+   2:35  warning  'CookieOptions' is defined but never used      @typescript-eslint/no-unused-vars
+  16:9   warning  'supabase' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  25:48  warning  'options' is defined but never used            @typescript-eslint/no-unused-vars
+
+✖ 11 problems (2 errors, 9 warnings)
+
