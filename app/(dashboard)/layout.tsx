@@ -21,7 +21,7 @@ export default async function DashboardLayout({
 
   return (
     <UserProvider user={user}>
-      <div className="min-h-screen flex bg-slate-50/50">
+      <div className="min-h-screen flex bg-background">
         {/* Sidebar */}
         <DashboardSidebar />
 

@@ -224,7 +224,7 @@ export default function ProgressPage() {
                   percent={topic.progress}
                   showInfo={false}
                   strokeColor={topic.color}
-                  railColor="#e5e7eb"
+                  railColor="#374151"
                 />
               </div>
               <span
@@ -257,8 +257,8 @@ export default function ProgressPage() {
                 key={index}
                 className={`text-center p-3 rounded-xl ${
                   badge.earned
-                    ? "bg-linear-to-br from-amber-50 to-orange-50 border border-amber-200"
-                    : "bg-gray-50 opacity-50"
+                    ? "bg-linear-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/30"
+                    : "bg-muted opacity-50"
                 }`}
               >
                 <span className="text-2xl">{badge.icon}</span>
@@ -286,7 +286,7 @@ export default function ProgressPage() {
           <div className="space-y-4">
             {achievements.map((achievement, index) => (
               <div key={index} className="flex items-start gap-3">
-                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-sm">
+                <div className="w-8 h-8 bg-green-500/20 rounded-full flex items-center justify-center text-sm">
                   {achievement.icon}
                 </div>
                 <div>

@@ -11,7 +11,7 @@ interface PathAILogoProps {
 export default function PathAILogo({
   size = 32,
   showText = true,
-  textClassName = "text-xl font-bold text-foreground",
+  textClassName = "text-xl font-bold text-black dark:text-white",
 }: PathAILogoProps) {
   return (
     <div className="flex items-center gap-2">

@@ -123,7 +123,7 @@ export default function RoadmapPage() {
                         ? "bg-green-500"
                         : status === "in-progress"
                           ? "bg-primary"
-                          : "bg-gray-200"
+                          : "bg-muted"
                     }`}
                   >
                     {status === "completed" ? (
@@ -131,11 +131,11 @@ export default function RoadmapPage() {
                     ) : status === "in-progress" ? (
                       <PlayCircleOutlined className="text-white text-lg" />
                     ) : (
-                      <LockOutlined className="text-gray-400 text-lg" />
+                      <LockOutlined className="text-muted-foreground text-lg" />
                     )}
                   </div>
                   {index < learningPath.modules.length - 1 && (
-                    <div className="w-0.5 h-8 bg-gray-200 mt-2" />
+                    <div className="w-0.5 h-8 bg-border mt-2" />
                   )}
                 </div>
 
@@ -210,7 +210,7 @@ export default function RoadmapPage() {
                         percent={Math.round(moduleProgress)}
                         showInfo={false}
                         strokeColor="#4f46e5"
-                        railColor="#e5e7eb"
+                        railColor="#374151"
                       />
                     </div>
                   )}

@@ -214,14 +214,14 @@ function LessonsContent() {
           {/* Learning Objectives */}
           {currentLesson.learningObjectives &&
             currentLesson.learningObjectives.length > 0 && (
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-8">
+              <div className="bg-primary/10 border border-primary/20 rounded-xl p-6 mb-8">
                 <h3 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
                   <TrophyOutlined /> Learning Objectives
                 </h3>
                 <ul className="space-y-2 text-muted-foreground">
                   {currentLesson.learningObjectives.map((obj, i) => (
                     <li key={i} className="flex items-start gap-2">
-                      <CheckCircleFilled className="text-blue-500 mt-1" />
+                      <CheckCircleFilled className="text-primary mt-1" />
                       <div className="flex-1">
                         <MarkdownRenderer
                           content={obj}
@@ -247,10 +247,10 @@ function LessonsContent() {
                     href={res.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block p-4 border border-border rounded-xl hover:bg-slate-50 transition-colors"
+                    className="block p-4 border border-border rounded-xl hover:bg-muted transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
+                      <div className="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center text-primary">
                         <LinkOutlined />
                       </div>
                       <div>
@@ -344,7 +344,7 @@ function LessonsContent() {
                   key={lesson.id}
                   onClick={() => router.push(`/lessons?lessonId=${lesson.id}`)}
                   className={`flex items-start gap-3 p-2 rounded-lg cursor-pointer transition-colors ${
-                    isActive ? "bg-primary/10" : "hover:bg-slate-50"
+                    isActive ? "bg-primary/10" : "hover:bg-muted"
                   }`}
                 >
                   {lesson.isCompleted ? (
@@ -352,7 +352,7 @@ function LessonsContent() {
                   ) : (
                     <div
                       className={`w-4 h-4 rounded-full border-2 mt-1 shrink-0 ${
-                        isActive ? "border-primary" : "border-gray-300"
+                        isActive ? "border-primary" : "border-border"
                       }`}
                     />
                   )}

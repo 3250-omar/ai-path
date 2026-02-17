@@ -22,7 +22,7 @@ const heroFeatures = [
 
 export default function HeroSection() {
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-slate-950 pt-32 pb-20 px-6">
+    <section className="relative min-h-lvh flex items-center justify-center overflow-hidden bg-slate-950 pt-32 pb-20 px-6">
       <StarBackground />
 
       {/* Mesh Gradients */}

@@ -1,13 +1,19 @@
-import { model } from "@/lib/gemini";
-import {
-  createLearningPathPrompt,
-  validateAIGeneratedPath,
-  extractJSONFromResponse,
-} from "@/lib/ai-prompt-templates";
+// import { model } from "@/lib/gemini"
+// import {
+//   createLearningPathPrompt,
+//   validateAIGeneratedPath,
+//   extractJSONFromResponse,
+// } from "@/lib/ai-prompt-templates";
 import { createLearningPath } from "@/lib/db/learning-paths";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 import type { AIGeneratedPath } from "@/types/learning-path";
+import {
+  createLearningPathPrompt,
+  extractJSONFromResponse,
+  validateAIGeneratedPath,
+} from "@/lib/ai-prompt-templates";
+import { model } from "@/lib/gemini";
 
 /**
  * POST /api/generate-path
