@@ -229,7 +229,7 @@ function AIChatFloatContent() {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.map((msg) => (
               <div
                 key={msg.id}
@@ -239,7 +239,7 @@ function AIChatFloatContent() {
                   className={`max-w-[90%] rounded-2xl p-3 text-sm ${
                     msg.role === "user"
                       ? "bg-primary text-white rounded-br-none"
-                      : "bg-white border border-border rounded-bl-none shadow-xs"
+                      : "bg-card border border-border rounded-bl-none shadow-xs text-card-foreground"
                   }`}
                 >
                   {msg.role === "assistant" ? (
@@ -259,7 +259,7 @@ function AIChatFloatContent() {
             ))}
             {isTyping && messages[messages.length - 1]?.role === "user" && (
               <div className="flex justify-start">
-                <div className="bg-white border border-border rounded-2xl rounded-bl-none p-3 shadow-xs">
+                <div className="bg-card border border-border rounded-2xl rounded-bl-none p-3 shadow-xs">
                   <LoadingOutlined className="text-primary text-xl" spin />
                 </div>
               </div>
@@ -268,7 +268,7 @@ function AIChatFloatContent() {
           </div>
 
           {/* Input */}
-          <div className="p-3 border-t border-border bg-white">
+          <div className="p-3 border-t border-border bg-card">
             <div className="flex gap-2">
               <Input
                 placeholder="Ask your tutor..."

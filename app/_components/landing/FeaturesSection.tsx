@@ -64,7 +64,7 @@ export default function FeaturesSection() {
   return (
     <section
       id="features"
-      className="py-32 px-6 bg-slate-950 relative overflow-hidden"
+      className="py-32 px-6 bg-background relative overflow-hidden"
     >
       {/* Background Gradients */}
       <div className="absolute top-1/4 left-0 w-[500px] h-[500px] bg-indigo-900/20 rounded-full blur-[100px] pointer-events-none" />
@@ -78,13 +78,13 @@ export default function FeaturesSection() {
           transition={{ duration: 0.6 }}
           className="text-center mb-20"
         >
-          <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
+          <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
             Powerful{" "}
             <span className="text-transparent bg-clip-text bg-linear-to-r from-indigo-400 to-cyan-400">
               Features
             </span>
           </h2>
-          <p className="text-slate-400 text-lg max-w-2xl mx-auto">
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
             Everything you need to master any skill, powered by advanced AI
             algorithms.
           </p>
@@ -100,13 +100,13 @@ export default function FeaturesSection() {
           {features.map((feature, index) => (
             <motion.div key={index} variants={item}>
               <GlowingCard className="h-full p-8 group">
-                <div className="w-14 h-14 rounded-xl bg-slate-800/50 flex items-center justify-center text-indigo-400 text-2xl mb-6 group-hover:text-cyan-400 group-hover:scale-110 transition-all duration-300">
+                <div className="w-14 h-14 rounded-xl bg-muted/50 flex items-center justify-center text-indigo-400 text-2xl mb-6 group-hover:text-cyan-400 group-hover:scale-110 transition-all duration-300">
                   {feature.icon}
                 </div>
-                <h3 className="text-xl font-semibold text-white mb-3">
+                <h3 className="text-xl font-semibold text-foreground mb-3">
                   {feature.title}
                 </h3>
-                <p className="text-slate-400 leading-relaxed">
+                <p className="text-muted-foreground leading-relaxed">
                   {feature.description}
                 </p>
               </GlowingCard>

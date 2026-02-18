@@ -46,7 +46,7 @@ export const GlowingCard = ({
       onBlur={handleBlur}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className={`relative rounded-2xl border border-slate-800 bg-slate-900/50 overflow-hidden ${className}`}
+      className={`relative rounded-2xl border border-border bg-card overflow-hidden ${className}`}
     >
       <div
         className="pointer-events-none absolute -inset-px opacity-0 transition duration-300"

@@ -22,7 +22,7 @@ const heroFeatures = [
 
 export default function HeroSection() {
   return (
-    <section className="relative min-h-lvh flex items-center justify-center overflow-hidden bg-slate-950 pt-32 pb-20 px-6">
+    <section className="relative min-h-lvh flex items-center justify-center overflow-hidden bg-background pt-32 pb-20 px-6">
       <StarBackground />
 
       {/* Mesh Gradients */}
@@ -35,7 +35,7 @@ export default function HeroSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="inline-flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 px-4 py-1.5 rounded-full text-sm font-medium mb-8 backdrop-blur-sm"
+          className="inline-flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 dark:text-indigo-300 px-4 py-1.5 rounded-full text-sm font-medium mb-8 backdrop-blur-sm"
         >
           <RocketOutlined />
           AI-Powered Learning Platform
@@ -46,7 +46,7 @@ export default function HeroSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight mb-8 tracking-tight"
+          className="text-5xl md:text-6xl lg:text-7xl font-bold text-foreground leading-tight mb-8 tracking-tight"
         >
           Build Your Personalized <br className="hidden md:block" />
           <GradientText colors={["#6366f1", "#06b6d4", "#6366f1"]}>
@@ -60,7 +60,7 @@ export default function HeroSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="text-xl text-slate-400 max-w-2xl mx-auto mb-12"
+          className="text-xl text-muted-foreground max-w-2xl mx-auto mb-12"
         >
           Tell us your goal and get a roadmap, lessons, quizzes, and weekly plan
           instantly. Your journey to mastery starts here.
@@ -78,7 +78,7 @@ export default function HeroSection() {
               Generate My Path <ArrowRightOutlined />
             </SpotlightButton>
           </Link>
-          <button className="group flex items-center gap-2 text-slate-300 hover:text-white transition-colors px-8 py-3 rounded-full border border-slate-800 hover:border-slate-600 bg-slate-900/50 backdrop-blur-sm">
+          <button className="group flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors px-8 py-3 rounded-full border border-border hover:border-muted-foreground/50 bg-muted/50 backdrop-blur-sm">
             <PlayCircleOutlined className="text-xl group-hover:text-indigo-400 transition-colors" />
             Watch Demo
           </button>
@@ -89,14 +89,14 @@ export default function HeroSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
-          className="flex flex-wrap items-center justify-center gap-10 md:gap-20 border-t border-slate-800/50 pt-10"
+          className="flex flex-wrap items-center justify-center gap-10 md:gap-20 border-t border-border pt-10"
         >
           {heroFeatures.map((feature, index) => (
             <div key={index} className="flex flex-col items-center gap-3 group">
               <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 text-2xl group-hover:scale-110 group-hover:bg-indigo-500/20 group-hover:border-indigo-400/30 group-hover:shadow-[0_0_20px_rgba(99,102,241,0.3)] transition-all duration-300">
                 {feature.icon}
               </div>
-              <span className="text-sm text-slate-400 font-medium group-hover:text-slate-200 transition-colors">
+              <span className="text-sm text-muted-foreground font-medium group-hover:text-foreground transition-colors">
                 {feature.label}
               </span>
             </div>

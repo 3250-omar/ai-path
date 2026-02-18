@@ -18,7 +18,7 @@ export default function QuizProgressBar({
           percent={Math.round((currentQuestionIndex / totalQuestions) * 100)}
           showInfo={false}
           strokeColor="#4f46e5"
-          railColor="#e5e7eb"
+          railColor="var(--muted)"
         />
       </div>
       <span className="ml-4 text-sm text-muted-foreground">

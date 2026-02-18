@@ -66,45 +66,49 @@ export default function SignupPage() {
         {/* Full Name */}
         <Form.Item
           name="fullName"
-          label={<span className="font-medium">Full Name</span>}
+          label={
+            <span className="font-medium text-foreground/80">Full Name</span>
+          }
           rules={[{ required: true, message: "Please enter your full name" }]}
         >
           <Input
-            prefix={<UserOutlined className="text-muted-foreground" />}
+            prefix={<UserOutlined className="text-muted-foreground/60" />}
             placeholder="Omar Ahmed"
-            className="rounded-lg! bg-input-background!"
+            className="rounded-lg! bg-background/50! dark:bg-muted/30! border-border! hover:border-primary! focus:border-primary! transition-all!"
           />
         </Form.Item>
 
         {/* Email */}
         <Form.Item
           name="email"
-          label={<span className="font-medium">Email</span>}
+          label={<span className="font-medium text-foreground/80">Email</span>}
           rules={[
             { required: true, message: "Please enter your email" },
             { type: "email", message: "Please enter a valid email" },
           ]}
         >
           <Input
-            prefix={<MailOutlined className="text-muted-foreground" />}
+            prefix={<MailOutlined className="text-muted-foreground/60" />}
             placeholder="omar@example.com"
-            className="rounded-lg! bg-input-background!"
+            className="rounded-lg! bg-background/50! dark:bg-muted/30! border-border! hover:border-primary! focus:border-primary! transition-all!"
           />
         </Form.Item>
 
         {/* Password */}
         <Form.Item
           name="password"
-          label={<span className="font-medium">Password</span>}
+          label={
+            <span className="font-medium text-foreground/80">Password</span>
+          }
           rules={[
             { required: true, message: "Please enter your password" },
             { min: 8, message: "Password must be at least 8 characters" },
           ]}
         >
           <Input.Password
-            prefix={<LockOutlined className="text-muted-foreground" />}
+            prefix={<LockOutlined className="text-muted-foreground/60" />}
             placeholder="••••••••"
-            className="rounded-lg! bg-input-background!"
+            className="rounded-lg! bg-background/50! dark:bg-muted/30! border-border! hover:border-primary! focus:border-primary! transition-all!"
             iconRender={(visible) =>
               visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
             }
@@ -124,13 +128,19 @@ export default function SignupPage() {
             },
           ]}
         >
-          <Checkbox>
+          <Checkbox className="dark:text-foreground/70!">
             I agree to the{" "}
-            <Link href="/terms" className="text-primary hover:underline">
+            <Link
+              href="/terms"
+              className="text-primary hover:text-primary/80 transition-colors"
+            >
               Terms of Service
             </Link>{" "}
             and{" "}
-            <Link href="/privacy" className="text-primary hover:underline">
+            <Link
+              href="/privacy"
+              className="text-primary hover:text-primary/80 transition-colors"
+            >
               Privacy Policy
             </Link>
           </Checkbox>
@@ -143,7 +153,7 @@ export default function SignupPage() {
             htmlType="submit"
             loading={loading}
             block
-            className="h-12! rounded-lg! font-medium! bg-primary!"
+            className="h-12! rounded-lg! font-medium! bg-primary! hover:bg-primary/90! border-0! transition-all!"
           >
             Create Account
           </Button>
@@ -151,18 +161,20 @@ export default function SignupPage() {
       </Form>
 
       {/* Divider */}
-      <Divider className="text-muted-foreground!">Or continue with</Divider>
+      <Divider className="text-muted-foreground/40! border-border!">
+        Or continue with
+      </Divider>
 
       {/* Google OAuth */}
       <Button
         block
         size="large"
-        icon={<GoogleOutlined />}
+        icon={<GoogleOutlined className="text-primary" />}
         onClick={handleGoogleSignIn}
         loading={googleLoading}
-        className="h-12! rounded-lg! font-medium! border-border!"
+        className="h-12! rounded-lg! font-medium! border-border! bg-background! hover:bg-muted! dark:bg-muted/20! transition-all!"
       >
-        <span className="text-primary">Sign up with Google</span>
+        <span className="text-foreground">Sign up with Google</span>
       </Button>
 
       {/* Login Link */}
@@ -170,7 +182,7 @@ export default function SignupPage() {
         Already have an account?{" "}
         <Link
           href="/login"
-          className="text-primary font-medium hover:underline"
+          className="text-primary font-medium hover:text-primary/80 transition-colors"
         >
           Login
         </Link>

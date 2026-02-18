@@ -44,7 +44,7 @@ export default function DashboardHeader() {
       <Input
         prefix={<SearchOutlined className="text-muted-foreground" />}
         placeholder="Search lessons, roadmaps..."
-        className="w-64! rounded-lg! bg-muted! border-border!"
+        className="w-64! rounded-lg! bg-muted! border-border! dark:bg-white!"
         size="middle"
       />
 
@@ -58,7 +58,7 @@ export default function DashboardHeader() {
           <Button
             type="text"
             icon={getThemeIcon()}
-            className="flex items-center justify-center text-muted-foreground"
+            className="flex items-center justify-center text-muted-foreground dark:text-white!"
             title="Toggle theme"
           />
         </Dropdown>
@@ -66,7 +66,9 @@ export default function DashboardHeader() {
         <Badge count={0}>
           <Button
             type="text"
-            icon={<BellOutlined className="text-xl text-muted-foreground" />}
+            icon={
+              <BellOutlined className="text-xl text-muted-foreground dark:text-white!" />
+            }
             className="flex items-center justify-center"
           />
         </Badge>

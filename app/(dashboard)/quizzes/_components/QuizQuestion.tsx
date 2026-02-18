@@ -26,7 +26,7 @@ export default function QuizQuestion({
 }: QuizQuestionProps) {
   return (
     <Card
-      className="rounded-xl! border-border!"
+      className="bg-card! rounded-xl! border-border!"
       styles={{ body: { padding: 32 } }}
     >
       <div className="mb-6">
@@ -53,9 +53,9 @@ export default function QuizQuestion({
                 className={`p-4 rounded-xl border transition-colors cursor-pointer ${
                   answered
                     ? isCorrect
-                      ? "border-green-500 bg-green-50"
+                      ? "border-green-500 bg-green-500/10 dark:bg-green-500/20"
                       : isSelected
-                        ? "border-red-500 bg-red-50"
+                        ? "border-red-500 bg-red-500/10 dark:bg-red-500/20"
                         : "border-border"
                     : isSelected
                       ? "border-primary bg-primary/5"
@@ -68,9 +68,9 @@ export default function QuizQuestion({
                     <div
                       className={
                         answered && isCorrect
-                          ? "text-green-700 font-medium"
+                          ? "text-green-600 dark:text-green-400 font-medium"
                           : answered && isSelected && !isCorrect
-                            ? "text-red-700 font-medium"
+                            ? "text-red-600 dark:text-red-400 font-medium"
                             : "text-foreground"
                       }
                     >

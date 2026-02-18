@@ -56,17 +56,17 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-6!">
       <h1 className="text-2xl font-bold text-foreground mb-6">Settings</h1>
 
       {/* Profile Section */}
       <Card
         title={
-          <span className="font-semibold">
-            <UserOutlined className="mr-2" /> Profile
+          <span className="font-semibold text-foreground">
+            <UserOutlined className="mr-2 text-foreground" /> Profile
           </span>
         }
-        className="rounded-xl! border-border!"
+        className="bg-card! rounded-xl! border-border!"
       >
         <div className="flex items-center gap-4">
           <Avatar
@@ -86,11 +86,11 @@ export default function SettingsPage() {
       {/* Learning Path Management */}
       <Card
         title={
-          <span className="font-semibold">
-            <BookOutlined className="mr-2" /> Learning Path
+          <span className="font-semibold text-foreground">
+            <BookOutlined className="mr-2 text-foreground" /> Learning Path
           </span>
         }
-        className="rounded-xl! border-border!"
+        className="bg-card! rounded-xl! border-border!"
       >
         {learningPath ? (
           <div className="space-y-4">
@@ -152,20 +152,25 @@ export default function SettingsPage() {
       {/* Preferences Section (Placeholder) */}
       <Card
         title={
-          <span className="font-semibold">
-            <SettingOutlined className="mr-2" /> Preferences
+          <span className="font-semibold text-foreground">
+            <SettingOutlined className="mr-2 text-foreground" /> Preferences
           </span>
         }
-        className="rounded-xl! border-border!"
+        className="bg-card! rounded-xl! border-border! "
       >
         <List>
-          <List.Item actions={[<Switch key="theme" defaultChecked disabled />]}>
+          {/* <List.Item
+            actions={[<Switch key="theme" defaultChecked={false} disabled />]}
+          >
             <List.Item.Meta
               title="Dark Mode"
-              description="Toggle dark mode theme (Coming soon)"
+              description="Use the toggle in the top header to switch themes"
             />
-          </List.Item>
-          <List.Item actions={[<Switch key="notifications" defaultChecked />]}>
+          </List.Item> */}
+          <List.Item
+            actions={[<Switch key="notifications" defaultChecked />]}
+            className="dark:text-white!"
+          >
             <List.Item.Meta
               title="Email Notifications"
               description="Receive updates about your progress"

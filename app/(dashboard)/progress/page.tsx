@@ -106,7 +106,7 @@ export default function ProgressPage() {
         {stats.map((stat, index) => (
           <Card
             key={index}
-            className="rounded-xl! border-border!"
+            className="bg-card! rounded-xl! border-border!"
             styles={{ body: { padding: 20 } }}
           >
             <div
@@ -131,7 +131,7 @@ export default function ProgressPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Weekly Activity */}
         <Card
-          className="rounded-xl! border-border!"
+          className="bg-card! rounded-xl! border-border!"
           styles={{ body: { padding: 24 } }}
         >
           <h2 className="text-lg font-semibold text-foreground mb-4">
@@ -160,7 +160,7 @@ export default function ProgressPage() {
 
         {/* Monthly Progress */}
         <Card
-          className="rounded-xl! border-border!"
+          className="bg-card! rounded-xl! border-border!"
           styles={{ body: { padding: 24 } }}
         >
           <h2 className="text-lg font-semibold text-foreground mb-4">
@@ -207,7 +207,7 @@ export default function ProgressPage() {
 
       {/* Topics Mastered */}
       <Card
-        className="rounded-xl! border-border!"
+        className="bg-card! rounded-xl! border-border!"
         styles={{ body: { padding: 24 } }}
       >
         <h2 className="text-lg font-semibold text-foreground mb-4">
@@ -224,7 +224,7 @@ export default function ProgressPage() {
                   percent={topic.progress}
                   showInfo={false}
                   strokeColor={topic.color}
-                  railColor="#374151"
+                  railColor="var(--muted)"
                 />
               </div>
               <span
@@ -242,7 +242,7 @@ export default function ProgressPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Badges Collection */}
         <Card
-          className="rounded-xl! border-border! lg:col-span-2"
+          className="bg-card! rounded-xl! border-border! lg:col-span-2"
           styles={{ body: { padding: 24 } }}
         >
           <div className="flex items-center justify-between mb-4">
@@ -277,7 +277,7 @@ export default function ProgressPage() {
 
         {/* Recent Achievements */}
         <Card
-          className="rounded-xl! border-border!"
+          className="bg-card! rounded-xl! border-border!"
           styles={{ body: { padding: 24 } }}
         >
           <h2 className="text-lg font-semibold text-foreground mb-4">
@@ -319,11 +319,11 @@ export default function ProgressPage() {
             no time!
           </p>
           <div className="flex justify-center gap-4">
-            <div className="bg-white/20 backdrop-blur-sm rounded-lg px-6 py-3">
+            <div className="bg-primary-foreground/20 backdrop-blur-sm rounded-lg px-6 py-3">
               <p className="text-sm opacity-80">Top 15%</p>
               <p className="font-bold">Among all learners</p>
             </div>
-            <div className="bg-white/20 backdrop-blur-sm rounded-lg px-6 py-3">
+            <div className="bg-primary-foreground/20 backdrop-blur-sm rounded-lg px-6 py-3">
               <p className="text-sm opacity-80">+24%</p>
               <p className="font-bold">Faster this week</p>
             </div>

@@ -1,0 +1,84 @@
+
+> my-app@0.1.0 lint
+> eslint
+
+
+D:\omar\portfolio\ai-path\my-app\app\(dashboard)\quizzes\page.tsx
+  22:33  error  Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. This value was memoized in source but not in compilation output.
+
+D:\omar\portfolio\ai-path\my-app\app\(dashboard)\quizzes\page.tsx:22:33
+  20 |   const submitQuiz = useSubmitQuiz();
+  21 |
+> 22 |   const { quiz, lessonTitle } = useMemo(() => {
+     |                                 ^^^^^^^^^^^^^^^
+> 23 |     if (!learningPath || !lessonId) return { quiz: null, lessonTitle: "" };
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 24 |
+     …
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 31 |     return { quiz: null, lessonTitle: "" };
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 32 |   }, [learningPath, lessonId]);
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Could not preserve existing memoization
+  33 |
+  34 |   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  35 |   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);  react-hooks/preserve-manual-memoization
+
+D:\omar\portfolio\ai-path\my-app\app\(dashboard)\roadmap\page.tsx
+  10:15  warning  'LearningPath' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\omar\portfolio\ai-path\my-app\app\_components\MarkdownRenderer.tsx
+  46:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\omar\portfolio\ai-path\my-app\app\_components\Navbar.tsx
+  4:10  warning  'Button' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\omar\portfolio\ai-path\my-app\app\_components\ThemeProvider.tsx
+  34:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+D:\omar\portfolio\ai-path\my-app\app\_components\ThemeProvider.tsx:34:5
+  32 |
+  33 |   useEffect(() => {
+> 34 |     setMounted(true);
+     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  35 |     // Load saved theme from localStorage
+  36 |     const savedTheme = localStorage.getItem("theme") as Theme | null;
+  37 |     if (savedTheme) {                   react-hooks/set-state-in-effect
+  46:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+D:\omar\portfolio\ai-path\my-app\app\_components\ThemeProvider.tsx:46:5
+  44 |
+  45 |     const resolved = theme === "system" ? getSystemTheme() : theme;
+> 46 |     setResolvedTheme(resolved);
+     |     ^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  47 |
+  48 |     const root = document.documentElement;
+  49 |     root.classList.remove("light", "dark");  react-hooks/set-state-in-effect
+
+D:\omar\portfolio\ai-path\my-app\app\learning-path\[id]\page.tsx
+   3:21  warning  'useState' is defined but never used            @typescript-eslint/no-unused-vars
+  14:3   warning  'message' is defined but never used             @typescript-eslint/no-unused-vars
+  24:15  warning  'LearningPath' is defined but never used        @typescript-eslint/no-unused-vars
+  28:16  warning  'Paragraph' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\omar\portfolio\ai-path\my-app\utils\supabase\middleware.ts
+   2:35  warning  'CookieOptions' is defined but never used      @typescript-eslint/no-unused-vars
+  16:9   warning  'supabase' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  25:48  warning  'options' is defined but never used            @typescript-eslint/no-unused-vars
+
+✖ 13 problems (4 errors, 9 warnings)
+

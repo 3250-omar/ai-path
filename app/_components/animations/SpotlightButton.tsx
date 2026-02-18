@@ -39,7 +39,7 @@ export default function SpotlightButton({
       onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className={`relative inline-flex items-center justify-center overflow-hidden rounded-full bg-slate-950 border border-slate-800 px-8 py-3 font-medium text-white transition-all duration-300 hover:scale-105 active:scale-95 ${className}`}
+      className={`relative inline-flex items-center justify-center overflow-hidden rounded-full bg-primary border border-primary/20 px-8 py-3 font-medium text-white transition-all duration-300 hover:scale-105 active:scale-95 ${className}`}
     >
       <div
         className="pointer-events-none absolute -inset-px opacity-0 transition duration-300"

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Card, Progress, Tag, Spin, Empty } from "antd";
+import { Button, Card, Progress, Empty, Spin } from "antd";
 import {
   ArrowRightOutlined,
   BookOutlined,
@@ -45,7 +45,7 @@ export default function DashboardContent() {
     return (
       <div className="space-y-6">
         <Card
-          className="rounded-xl! border-border!"
+          className="bg-card! rounded-xl! border-border!"
           styles={{ body: { padding: 48 } }}
         >
           <Empty
@@ -111,22 +111,24 @@ export default function DashboardContent() {
   return (
     <div className="space-y-6">
       {/* Welcome Banner */}
-      <div className="bg-linear-gradient-to-r from-primary via-secondary to-primary rounded-2xl p-6">
+      <div className="bg-linear-to-r from-primary/90 via-secondary/90 to-primary/90 dark:from-primary dark:via-secondary dark:to-primary rounded-2xl p-6 text-white">
         <h1 className="text-2xl font-bold mb-2">
           Welcome back, {userName}! 👋
         </h1>
-        <p className="mb-4">You&apos;re making great progress. Keep it up!</p>
+        <p className="mb-4 text-white/90">
+          You&apos;re making great progress. Keep it up!
+        </p>
         <div className="flex gap-3">
           <Link href="/lessons">
             <Button
-              className="text-primary! border-0! font-medium! rounded-lg!"
+              className="bg-white! text-primary! border-0! font-medium! rounded-lg!"
               icon={<ArrowRightOutlined />}
             >
               Continue Learning
             </Button>
           </Link>
           <Link href="/roadmap">
-            <Button className="bg-white/20! text-white! border-white/30! rounded-lg!">
+            <Button className="bg-white/10! text-white! border-white/20! hover:bg-white/20! rounded-lg!">
               View Roadmap
             </Button>
           </Link>
@@ -138,7 +140,7 @@ export default function DashboardContent() {
         {stats.map((stat, index) => (
           <Card
             key={index}
-            className="rounded-xl! border-border!"
+            className="bg-card! rounded-xl! border-border!"
             styles={{ body: { padding: 20 } }}
           >
             <div
@@ -167,15 +169,17 @@ export default function DashboardContent() {
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column - 2/3 width */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-6!">
           {/* Current Roadmap */}
           <Card
-            className="rounded-xl! border-border!"
+            title={
+              <span className="font-semibold text-foreground">
+                Current Learning Path
+              </span>
+            }
+            className="bg-card! rounded-xl! border-border!"
             styles={{ body: { padding: 24 } }}
           >
-            <h2 className="text-lg font-semibold text-foreground mb-4">
-              Current Learning Path
-            </h2>
             <div className="flex items-center gap-6">
               <Progress
                 type="circle"
@@ -224,17 +228,19 @@ export default function DashboardContent() {
 
           {/* Upcoming Lessons */}
           <Card
-            className="rounded-xl! border-border!"
+            title={
+              <span className="font-semibold text-foreground">
+                Upcoming Lessons
+              </span>
+            }
+            extra={
+              <span className="text-sm text-muted-foreground font-normal">
+                {completedLessons}/{totalLessons} completed
+              </span>
+            }
+            className="bg-card! rounded-xl! border-border!"
             styles={{ body: { padding: 24 } }}
           >
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-foreground">
-                Upcoming Lessons
-              </h2>
-              <Tag color="blue">
-                {completedLessons}/{totalLessons} completed
-              </Tag>
-            </div>
             <div className="space-y-3">
               {upcomingLessons.length === 0 ? (
                 <Empty description="All lessons completed! 🎉" />
@@ -269,16 +275,16 @@ export default function DashboardContent() {
         </div>
 
         {/* Right Column - 1/3 width */}
-        <div className="space-y-6">
+        <div className="space-y-6!">
           {/* Module Overview */}
           <Card
-            className="rounded-xl! border-border!"
+            className="bg-card! rounded-xl! border-border!"
             styles={{ body: { padding: 24 } }}
           >
             <h2 className="text-lg font-semibold text-foreground mb-4">
               Modules
             </h2>
-            <div className="space-y-3">
+            <div className="space-y-3  ">
               {learningPath.modules.slice(0, 5).map((module, index) => (
                 <div
                   key={module.id}
@@ -303,14 +309,16 @@ export default function DashboardContent() {
 
           {/* Progress Card */}
           <Card
-            className="rounded-xl! border-0! bg-linear-to-br! from-amber-400! to-orange-500!"
+            className="rounded-xl! border-0! bg-linear-to-br! from-amber-400! to-orange-500! dark:from-amber-600! dark:to-orange-700! "
             styles={{ body: { padding: 20 } }}
           >
-            <div className="text-white">
+            <div className="text-foreground">
               <span className="text-3xl">🎉</span>
-              <p className="text-sm opacity-80 mt-2">Your Progress</p>
+              <p className="text-sm opacity-80 mt-2 text-foreground/90">
+                Your Progress
+              </p>
               <p className="text-xl font-bold">{overallProgress}% Complete</p>
-              <p className="text-sm opacity-80 mt-1">
+              <p className="text-sm opacity-80 mt-1 text-foreground/90">
                 Keep up the great work! 💪
               </p>
             </div>

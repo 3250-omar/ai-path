@@ -24,7 +24,7 @@ export default function HowItWorksSection() {
   return (
     <section
       id="how-it-works"
-      className="py-32 px-6 bg-slate-900 border-y border-slate-800"
+      className="py-32 px-6 bg-muted border-y border-border"
     >
       <div className="max-w-5xl mx-auto">
         <motion.div
@@ -34,10 +34,10 @@ export default function HowItWorksSection() {
           transition={{ duration: 0.6 }}
           className="text-center mb-20"
         >
-          <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
+          <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
             How It Works
           </h2>
-          <p className="text-slate-400 text-lg max-w-2xl mx-auto">
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
             Get started in three simple steps
           </p>
         </motion.div>
@@ -55,15 +55,15 @@ export default function HowItWorksSection() {
               transition={{ duration: 0.5, delay: index * 0.2 }}
               className="text-center group relative"
             >
-              <div className="w-24 h-24 rounded-full bg-slate-950 border border-slate-800 text-white text-2xl font-bold flex items-center justify-center mx-auto mb-8 shadow-[0_0_30px_rgba(99,102,241,0.1)] group-hover:border-indigo-500/50 group-hover:shadow-[0_0_30px_rgba(99,102,241,0.3)] transition-all duration-300 relative z-10">
+              <div className="w-24 h-24 rounded-full bg-background border border-border text-foreground text-2xl font-bold flex items-center justify-center mx-auto mb-8 shadow-[0_0_30px_rgba(99,102,241,0.1)] group-hover:border-indigo-500/50 group-hover:shadow-[0_0_30px_rgba(99,102,241,0.3)] transition-all duration-300 relative z-10">
                 <span className="bg-linear-to-br from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
                   {step.number}
                 </span>
               </div>
-              <h3 className="text-xl font-semibold text-white mb-4">
+              <h3 className="text-xl font-semibold text-foreground mb-4">
                 {step.title}
               </h3>
-              <p className="text-slate-400 leading-relaxed px-4">
+              <p className="text-muted-foreground leading-relaxed px-4">
                 {step.description}
               </p>
             </motion.div>

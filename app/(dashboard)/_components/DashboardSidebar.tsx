@@ -44,7 +44,10 @@ export default function DashboardSidebar() {
       {/* Logo */}
       <div className="p-5 border-b border-sidebar-border">
         <Link href="/dashboard">
-          <PathAILogo size={32} textClassName="text-lg font-bold text-white" />
+          <PathAILogo
+            size={32}
+            textClassName="text-lg font-bold text-sidebar-foreground"
+          />
         </Link>
       </div>
 
@@ -62,7 +65,7 @@ export default function DashboardSidebar() {
               className={`flex items-center gap-3 px-5 py-3 mx-3 rounded-lg transition-colors text-sm font-medium ${
                 isActive
                   ? "bg-primary text-white"
-                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-white"
+                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
               }`}
             >
               <span className="text-lg">{item.icon}</span>
@@ -85,7 +88,7 @@ export default function DashboardSidebar() {
             {initial}
           </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-white truncate">
+            <p className="text-sm font-medium text-sidebar-foreground truncate">
               {displayName}
             </p>
             <p className="text-xs text-sidebar-foreground/60 truncate">
@@ -94,7 +97,7 @@ export default function DashboardSidebar() {
           </div>
           <button
             onClick={handleSignOut}
-            className="text-sidebar-foreground/60 hover:text-white transition-colors cursor-pointer border-none bg-transparent p-1"
+            className="text-sidebar-foreground/60 hover:text-sidebar-foreground transition-colors cursor-pointer border-none bg-transparent p-1"
             title="Sign out"
           >
             <LogoutOutlined />

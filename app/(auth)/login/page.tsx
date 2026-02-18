@@ -14,6 +14,12 @@ import { signIn, signInWithGoogle } from "../actions";
 
 export default function LoginPage() {
   const [form] = Form.useForm();
+  useState(() => {
+    form.setFieldsValue({
+      email: "admin002@gmail.com",
+      password: "000000000",
+    });
+  });
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
@@ -59,29 +65,31 @@ export default function LoginPage() {
         {/* Email */}
         <Form.Item
           name="email"
-          label={<span className="font-medium">Email</span>}
+          label={<span className="font-medium text-foreground/80">Email</span>}
           rules={[
             { required: true, message: "Please enter your email" },
             { type: "email", message: "Please enter a valid email" },
           ]}
         >
           <Input
-            prefix={<MailOutlined className="text-muted-foreground" />}
+            prefix={<MailOutlined className="text-muted-foreground/60" />}
             placeholder="omar@example.com"
-            className="rounded-lg! bg-input-background!"
+            className="rounded-lg! bg-background/50! dark:bg-white! border-border! hover:border-primary! focus:border-primary! transition-all! dark:text-foreground"
           />
         </Form.Item>
 
         {/* Password */}
         <Form.Item
           name="password"
-          label={<span className="font-medium">Password</span>}
+          label={
+            <span className="font-medium text-foreground/80">Password</span>
+          }
           rules={[{ required: true, message: "Please enter your password" }]}
         >
           <Input.Password
-            prefix={<LockOutlined className="text-muted-foreground" />}
+            prefix={<LockOutlined className="text-muted-foreground/60" />}
             placeholder="••••••••"
-            className="rounded-lg! bg-input-background!"
+            className="rounded-lg! bg-background/50! dark:bg-white! border-border! hover:border-primary! focus:border-primary! transition-all! dark:text-foreground"
             iconRender={(visible) =>
               visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
             }
@@ -91,11 +99,13 @@ export default function LoginPage() {
         {/* Remember & Forgot */}
         <div className="flex items-center justify-between mb-6">
           <Form.Item name="remember" valuePropName="checked" noStyle>
-            <Checkbox>Remember me</Checkbox>
+            <Checkbox className="dark:text-foreground/70!">
+              Remember me
+            </Checkbox>
           </Form.Item>
           <Link
             href="/forgot-password"
-            className="text-primary hover:underline text-sm font-medium"
+            className="text-primary hover:text-primary/80 transition-colors text-sm font-medium"
           >
             Forgot password?
           </Link>
@@ -108,7 +118,7 @@ export default function LoginPage() {
             htmlType="submit"
             loading={loading}
             block
-            className="h-12! rounded-lg! font-medium! bg-primary!"
+            className="h-12! rounded-lg! font-medium! bg-primary! hover:bg-primary/90! border-0! transition-all!"
           >
             Login
           </Button>
@@ -116,18 +126,20 @@ export default function LoginPage() {
       </Form>
 
       {/* Divider */}
-      <Divider className="text-muted-foreground!">Or continue with</Divider>
+      <Divider className="text-muted-foreground/40! border-border!">
+        Or continue with
+      </Divider>
 
       {/* Google OAuth */}
       <Button
         block
         size="large"
-        icon={<GoogleOutlined />}
+        icon={<GoogleOutlined className="text-primary" />}
         onClick={handleGoogleSignIn}
         loading={googleLoading}
-        className="h-12! rounded-lg! font-medium! border-border!"
+        className="h-12! rounded-lg! font-medium! border-border! bg-background! hover:bg-muted! dark:bg-muted/20! transition-all!"
       >
-        <span className="text-primary">Login with Google</span>
+        <span className="text-foreground">Login with Google</span>
       </Button>
 
       {/* Signup Link */}
@@ -135,7 +147,7 @@ export default function LoginPage() {
         Don&apos;t have an account?{" "}
         <Link
           href="/signup"
-          className="text-primary font-medium hover:underline"
+          className="text-primary font-medium hover:text-primary/80 transition-colors"
         >
           Sign up
         </Link>

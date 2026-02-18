@@ -63,7 +63,7 @@ function LessonsContent() {
     return (
       <div className="space-y-6">
         <Card
-          className="rounded-xl! border-border!"
+          className="bg-card! rounded-xl! border-border!"
           styles={{ body: { padding: 48 } }}
         >
           <Empty description="No active learning path found">
@@ -131,7 +131,7 @@ function LessonsContent() {
     return (
       <div className="space-y-6">
         <Card
-          className="rounded-xl! border-border!"
+          className="bg-card! rounded-xl! border-border!"
           styles={{ body: { padding: 48 } }}
         >
           <Empty description="No lessons found in this learning path" />
@@ -179,7 +179,7 @@ function LessonsContent() {
               { title: currentModule.title },
               { title: `Lesson ${currentLessonIndex + 1}` },
             ]}
-            className="text-muted-foreground"
+            className="text-muted-foreground! dark:bg-white! dark:p-4! dark:rounded-xl!"
           />
           <Tag color="blue" className="rounded-full!">
             ~15 min
@@ -202,7 +202,7 @@ function LessonsContent() {
 
         {/* Lesson Content */}
         <Card
-          className="rounded-xl! border-border!"
+          className="bg-card! rounded-xl! border-border!"
           styles={{ body: { padding: 32 } }}
         >
           {/* Content - rendered using reusable MarkdownRenderer */}
@@ -330,7 +330,7 @@ function LessonsContent() {
       <div className="w-80 space-y-4 hidden xl:block">
         {/* Module Progress */}
         <Card
-          className="rounded-xl! border-border!"
+          className="bg-card! rounded-xl! border-border!"
           styles={{ body: { padding: 20 } }}
         >
           <h3 className="font-semibold text-foreground mb-4">
@@ -380,7 +380,7 @@ function LessonsContent() {
 
         {/* Stats */}
         <Card
-          className="rounded-xl! border-border!"
+          className="bg-card! rounded-xl! border-border!"
           styles={{ body: { padding: 20 } }}
         >
           <div className="space-y-4">

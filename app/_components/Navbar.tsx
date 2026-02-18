@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { Button } from "antd";
 import PathAILogo from "./PathAILogo";
 
 export default function Navbar() {
@@ -12,7 +11,7 @@ export default function Navbar() {
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-slate-950/50 backdrop-blur-xl border-b border-white/5">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-background/50 backdrop-blur-xl border-b border-border">
       <nav className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
         {/* Logo */}
         <Link
@@ -28,7 +27,7 @@ export default function Navbar() {
             <a
               key={link.label}
               href={link.href}
-              className="text-slate-400 hover:text-white transition-all font-medium text-sm tracking-wide"
+              className="text-muted-foreground hover:text-foreground transition-all font-medium text-sm tracking-wide"
             >
               {link.label}
             </a>
@@ -38,7 +37,7 @@ export default function Navbar() {
         {/* Auth Buttons */}
         <div className="flex items-center gap-6">
           <Link href="/login">
-            <button className="text-slate-300 hover:text-white transition-colors font-medium text-sm">
+            <button className="text-muted-foreground hover:text-foreground transition-colors font-medium text-sm">
               Login
             </button>
           </Link>

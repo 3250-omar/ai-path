@@ -7,7 +7,6 @@ import {
   LockOutlined,
   ArrowRightOutlined,
 } from "@ant-design/icons";
-import type { LearningPath } from "@/types/learning-path";
 import Link from "next/link";
 import MarkdownRenderer from "@/app/_components/MarkdownRenderer";
 import { useActiveLearningPath } from "@/app/hooks/useQueries";
@@ -36,7 +35,7 @@ export default function RoadmapPage() {
     return (
       <div className="space-y-6">
         <Card
-          className="rounded-xl! border-border!"
+          className="bg-card! rounded-xl! border-border!"
           styles={{ body: { padding: 48 } }}
         >
           <Empty description="No active learning path found">
@@ -56,7 +55,7 @@ export default function RoadmapPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6!">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -80,22 +79,22 @@ export default function RoadmapPage() {
 
       {/* Progress Overview */}
       <Card
-        className="rounded-xl! border-border! bg-linear-to-r! from-slate-800! to-slate-900!"
+        className="rounded-xl! border-border! bg-linear-to-r! from-primary/90! to-secondary/90! dark:from-slate-800! dark:to-slate-900!"
         styles={{ body: { padding: 24 } }}
       >
         <div className="flex items-center justify-between text-white">
           <div>
-            <p className="text-white/60 text-sm mb-1">Overall Progress</p>
+            <p className="text-white/70 text-sm mb-1">Overall Progress</p>
             <p className="text-3xl font-bold">{overallProgress}%</p>
           </div>
           <div>
-            <p className="text-white/60 text-sm mb-1">Completed Modules</p>
+            <p className="text-white/70 text-sm mb-1">Completed Modules</p>
             <p className="text-3xl font-bold">
               {completedModules} / {totalModules}
             </p>
           </div>
           <div>
-            <p className="text-white/60 text-sm mb-1">Learning Path</p>
+            <p className="text-white/70 text-sm mb-1">Learning Path</p>
             <p className="text-xl font-bold">{learningPath.title}</p>
           </div>
         </div>
@@ -111,7 +110,7 @@ export default function RoadmapPage() {
           return (
             <Card
               key={module.id}
-              className="rounded-xl! border-border!"
+              className="bg-card! rounded-xl! border-border!"
               styles={{ body: { padding: 24 } }}
             >
               <div className="flex items-start gap-4">
@@ -210,7 +209,7 @@ export default function RoadmapPage() {
                         percent={Math.round(moduleProgress)}
                         showInfo={false}
                         strokeColor="#4f46e5"
-                        railColor="#374151"
+                        railColor="var(--muted)"
                       />
                     </div>
                   )}
@@ -224,14 +223,14 @@ export default function RoadmapPage() {
       {/* CTA Banner */}
       {overallProgress < 100 && (
         <Card
-          className="rounded-xl! border-0! bg-linear-to-r! from-slate-800! to-slate-900!"
+          className="rounded-xl! border-0! bg-linear-to-r! from-primary! to-secondary! dark:from-slate-800! dark:to-slate-900!"
           styles={{ body: { padding: 32 } }}
         >
           <div className="text-center text-white">
             <h2 className="text-xl font-bold mb-2">
               Ready for the next challenge?
             </h2>
-            <p className="text-white/70 mb-4">
+            <p className="text-white/80 mb-4">
               Continue your learning journey and level up your skills
             </p>
             {learningPath.modules.find((m) => !m.isCompleted) && (
@@ -241,7 +240,7 @@ export default function RoadmapPage() {
                 )}`}
               >
                 <Button
-                  className="bg-white! text-slate-900! border-0! rounded-lg! font-medium!"
+                  className="bg-primary! text-white! border-0! rounded-lg! font-medium!"
                   icon={<ArrowRightOutlined />}
                 >
                   Continue Learning

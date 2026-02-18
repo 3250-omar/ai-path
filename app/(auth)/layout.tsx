@@ -17,12 +17,13 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
   ];
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex bg-background text-foreground">
       {/* Left Panel - Gradient */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary via-secondary to-accent p-12 flex-col justify-center items-center text-white relative overflow-hidden">
         {/* Decorative elements */}
-        <div className="absolute top-20 left-20 w-32 h-32 bg-white/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-20 w-48 h-48 bg-white/10 rounded-full blur-3xl" />
+        <div className="absolute top-20 left-20 w-32 h-32 bg-white/10 rounded-full blur-3xl opacity-50" />
+        <div className="absolute bottom-20 right-20 w-48 h-48 bg-white/10 rounded-full blur-3xl opacity-50" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/20 rounded-full blur-[120px] mix-blend-overlay" />
 
         {/* Content */}
         <div className="relative z-10 max-w-md text-center">
@@ -78,20 +79,20 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
         </div>
 
         {/* Decorative Card at bottom */}
-        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 w-64 h-32 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20" />
+        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 w-64 h-32 bg-white/5 dark:bg-black/20 backdrop-blur-md rounded-2xl border border-white/10 dark:border-white/5" />
       </div>
 
       {/* Right Panel - Form */}
-      <div className="w-full lg:w-1/2 flex flex-col">
+      <div className="w-full lg:w-1/2 flex flex-col bg-background!">
         {/* Mobile Logo */}
-        <div className="lg:hidden p-6 border-b border-border">
+        <div className="lg:hidden p-6 border-b border-border bg-background!">
           <Link href="/">
             <PathAILogo size={36} />
           </Link>
         </div>
 
         {/* Form Container */}
-        <div className="flex-1 flex items-center justify-center p-6 md:p-12">
+        <div className="flex-1 flex items-center justify-center p-6 md:p-12 bg-background!">
           <div className="w-full max-w-md">{children}</div>
         </div>
       </div>

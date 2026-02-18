@@ -32,10 +32,7 @@ const testimonials = [
 
 export default function TestimonialsSection() {
   return (
-    <section
-      id="testimonials"
-      className="py-32 px-6 bg-slate-900 overflow-hidden"
-    >
+    <section id="testimonials" className="py-32 px-6 bg-muted overflow-hidden">
       <div className="max-w-6xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -44,10 +41,10 @@ export default function TestimonialsSection() {
           transition={{ duration: 0.6 }}
           className="text-center mb-20"
         >
-          <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
+          <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
             What Our Learners Say
           </h2>
-          <p className="text-slate-400 text-lg max-w-2xl mx-auto">
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
             Join thousands of successful learners
           </p>
         </motion.div>
@@ -61,7 +58,7 @@ export default function TestimonialsSection() {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
             >
-              <div className="h-full p-8 rounded-2xl bg-slate-950 border border-slate-800 hover:border-slate-700 transition-colors relative flex flex-col">
+              <div className="h-full p-8 rounded-2xl bg-background border border-border hover:border-primary/50 transition-colors relative flex flex-col">
                 <div className="absolute top-0 right-0 p-8 opacity-10 font-serif text-8xl text-indigo-500 leading-none pointer-events-none">
                   &rdquo;
                 </div>
@@ -71,7 +68,7 @@ export default function TestimonialsSection() {
                   defaultValue={testimonial.rating}
                   className="text-yellow-500 mb-6 text-xl"
                 />
-                <p className="text-slate-300 mb-8 leading-relaxed text-lg grow">
+                <p className="text-foreground/80 mb-8 leading-relaxed text-lg grow">
                   {testimonial.content}
                 </p>
                 <div className="flex items-center gap-4 mt-auto">
@@ -87,10 +84,12 @@ export default function TestimonialsSection() {
                     {testimonial.avatar}
                   </Avatar>
                   <div>
-                    <h4 className="font-semibold text-white text-lg">
+                    <h4 className="font-semibold text-foreground text-lg">
                       {testimonial.name}
                     </h4>
-                    <p className="text-sm text-slate-500">{testimonial.role}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {testimonial.role}
+                    </p>
                   </div>
                 </div>
               </div>

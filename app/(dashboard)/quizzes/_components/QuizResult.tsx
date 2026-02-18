@@ -28,7 +28,7 @@ export default function QuizResult({
       </div>
 
       <Card
-        className="rounded-xl! border-border! text-center"
+        className="bg-card! rounded-xl! border-border! text-center"
         styles={{ body: { padding: 48 } }}
       >
         <div className="text-6xl mb-4">
